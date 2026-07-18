@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Logowanie | Warehouse Manager{% endblock %}
+
+{% block body %}
+<section class="auth-card" aria-labelledby="login-heading">
+    <p class="eyebrow">Warehouse Manager</p>
+    <h1 id="login-heading">Zaloguj się</h1>
+    <p class="muted">Podaj dane dostępowe do przypisanych magazynów.</p>
+
+    {% if error %}
+        <div class="alert" role="alert">Nieprawidłowy login lub hasło.</div>
+    {% endif %}
+
+    <form method="post" action="{{ path('app_login') }}">
+        <label for="login">Login</label>
+        <input id="login" name="login" type="text" value="{{ last_username }}" autocomplete="username" maxlength="180" required autofocus>
+
+        <label for="password">Hasło</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <button type="submit">Zaloguj się</button>
+    </form>
+</section>
+{% endblock %}

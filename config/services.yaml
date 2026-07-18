@@ -16,8 +16,32 @@ services:
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
-    App\:
-        resource: '../src/'
+    App\Identity\Application\:
+        resource: '../src/Identity/Application/'
+        exclude: '../src/Identity/Application/Exception/'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\Identity\Infrastructure\:
+        resource: '../src/Identity/Infrastructure/'
+        exclude:
+            - '../src/Identity/Infrastructure/Security/SecurityUser.php'
+            - '../src/Identity/Infrastructure/Persistence/Doctrine/Fixtures/'
+
+    App\Identity\Domain\Repository\UserRepository:
+        alias: App\Identity\Infrastructure\Persistence\Doctrine\DoctrineUserRepository
+
+    App\Identity\Application\Port\PasswordHasher:
+        alias: App\Identity\Infrastructure\Security\SymfonyPasswordHasher
+
+when@dev:
+    services:
+        App\Identity\Infrastructure\Persistence\Doctrine\Fixtures\:
+            resource: '../src/Identity/Infrastructure/Persistence/Doctrine/Fixtures/'
+            autowire: true
+            autoconfigure: true
+
+when@test:
+    services:
+        App\Identity\Infrastructure\Persistence\Doctrine\Fixtures\:
+            resource: '../src/Identity/Infrastructure/Persistence/Doctrine/Fixtures/'
+            autowire: true
+            autoconfigure: true
