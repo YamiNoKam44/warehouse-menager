@@ -11,7 +11,7 @@ final class Version20260715220000 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Tworzy tabelę użytkowników dla modułu Identity.';
+        return 'Tworzy tabele użytkowników i artykułów.';
     }
 
     public function up(Schema $schema): void
@@ -26,10 +26,20 @@ final class Version20260715220000 extends AbstractMigration
                 PRIMARY KEY(id)
             ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB'
         );
+
+        $this->addSql(
+            'CREATE TABLE articles (
+                id INT AUTO_INCREMENT NOT NULL,
+                name VARCHAR(160) NOT NULL,
+                unit_of_measure VARCHAR(32) NOT NULL,
+                PRIMARY KEY(id)
+            ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB'
+        );
     }
 
     public function down(Schema $schema): void
     {
+        $this->addSql('DROP TABLE articles');
         $this->addSql('DROP TABLE identity_users');
     }
 }

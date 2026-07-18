@@ -6,9 +6,21 @@
     <title>{% block title %}Warehouse Manager{% endblock %}</title>
     <link rel="stylesheet" href="/styles/app.css">
 </head>
-<body>
-    <main class="page">
-        {% block body %}{% endblock %}
-    </main>
+<body class="{{ app.user ? 'has-sidebar' : 'is-auth-page' }}">
+    <a class="skip-link" href="#main-content">Przejdź do treści</a>
+
+    <div class="{{ app.user ? 'app-shell' : 'auth-shell' }}">
+        {% if app.user %}
+            {% include 'layout/_sidebar.html.twig' %}
+        {% endif %}
+
+        <main
+            id="main-content"
+            class="{{ app.user ? 'app-content' : 'page' }}"
+            tabindex="-1"
+        >
+            {% block body %}{% endblock %}
+        </main>
+    </div>
 </body>
 </html>
