@@ -16,6 +16,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Identity/Infrastructure/Persistence/Doctrine/Mapping'
                 prefix: 'App\Identity\Domain\Model'
                 alias: Identity
+            Article:
+                type: xml
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Article/Infrastructure/Persistence/Doctrine/Mapping'
+                prefix: 'App\Article\Domain\Model'
+                alias: Article
 
 when@prod:
     doctrine:

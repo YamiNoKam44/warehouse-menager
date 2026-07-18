@@ -50,6 +50,9 @@ final class LoginTest extends WebTestCase
     public function testUserCanLogInUsingDatabaseAdapter(): void
     {
         $crawler = $this->client->request('GET', '/login');
+
+        self::assertSelectorNotExists('aside.sidebar');
+
         $form = $crawler->filter('form[action="/login"]')->form([
             'login' => 'OPERATOR',
             'password' => 'bezpieczne-haslo',
@@ -60,7 +63,12 @@ final class LoginTest extends WebTestCase
         self::assertResponseRedirects('/');
 
         $this->client->followRedirect();
+
         self::assertSelectorTextContains('h1', 'Witaj, operator');
+        self::assertSelectorCount(1, 'main#main-content');
+        self::assertSelectorCount(1, 'aside.sidebar nav[aria-label="Główna nawigacja"]');
+        self::assertSelectorCount(1, 'a.sidebar__link[aria-current="page"]');
+        self::assertSelectorExists('form.sidebar__logout-form[method="post"]');
     }
 
     public function testInvalidCredentialsAreRejected(): void

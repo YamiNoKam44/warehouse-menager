@@ -3,16 +3,11 @@
 {% block title %}Panel użytkownika | Warehouse Manager{% endblock %}
 
 {% block body %}
-<section class="dashboard-card">
+<section class="dashboard-card" aria-labelledby="dashboard-heading">
     <div>
         <p class="eyebrow">Panel użytkownika</p>
-        <h1>Witaj, {{ login }}</h1>
+        <h1 id="dashboard-heading">Witaj, {{ login }}</h1>
         <p class="muted">Logowanie działa. Magazyny i operacje materiałowe będą kolejnym modułem.</p>
     </div>
-
-    <form method="post" action="{{ path('app_logout') }}">
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
-        <button class="secondary" type="submit">Wyloguj się</button>
-    </form>
 </section>
 {% endblock %}

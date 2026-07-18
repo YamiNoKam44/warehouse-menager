@@ -1,0 +1,84 @@
+{% set currentRoute = app.request.attributes.get('_route') %}
+
+<aside class="sidebar" aria-label="Panel boczny">
+    <a class="sidebar__logo" href="{{ path('user_dashboard') }}">
+        <span class="sidebar__logo-mark" aria-hidden="true">M</span>
+        <span>Magazyn</span>
+    </a>
+
+    <nav class="sidebar__navigation" aria-label="Główna nawigacja">
+        <section aria-labelledby="sidebar-warehouse">
+            <h2 id="sidebar-warehouse" class="visually-hidden">Magazyn</h2>
+
+            <ul class="sidebar__list">
+                <li>
+                    <a
+                        class="sidebar__link"
+                        href="{{ path('user_dashboard') }}"
+                        {% if currentRoute == 'user_dashboard' %}aria-current="page"{% endif %}
+                    >
+                        Pulpit
+                    </a>
+                </li>
+                <li>
+                    <span class="sidebar__link sidebar__link--disabled">
+                        Przyjęcie towaru
+                    </span>
+                </li>
+                <li>
+                    <span class="sidebar__link sidebar__link--disabled">
+                        Wydanie towaru
+                    </span>
+                </li>
+                <li>
+                    <span class="sidebar__link sidebar__link--disabled">
+                        Historia operacji
+                    </span>
+                </li>
+            </ul>
+        </section>
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <section aria-labelledby="sidebar-administration">
+                <h2 id="sidebar-administration" class="sidebar__category">Administracja</h2>
+
+                <ul class="sidebar__list">
+                    <li>
+                        <span class="sidebar__link sidebar__link--disabled">
+                            Magazyny
+                        </span>
+                    </li>
+                    <li>
+                        <span class="sidebar__link sidebar__link--disabled">
+                            Użytkownicy
+                        </span>
+                    </li>
+                    <li>
+                        <a
+                            class="sidebar__link"
+                            href="{{ path('admin_article_index') }}"
+                            {% if currentRoute starts with 'admin_article_' %}aria-current="page"{% endif %}
+                        >
+                            Artykuły
+                        </a>
+                    </li>
+                </ul>
+            </section>
+        {% endif %}
+
+        <section class="sidebar__account" aria-labelledby="sidebar-account">
+            <h2 id="sidebar-account" class="visually-hidden">Konto</h2>
+
+            <ul class="sidebar__list">
+                <li>
+                    <form class="sidebar__logout-form" method="post" action="{{ path('app_logout') }}">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                        <button class="sidebar__link sidebar__logout-button" type="submit">
+                            Wyloguj się
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </section>
+    </nav>
+</aside>

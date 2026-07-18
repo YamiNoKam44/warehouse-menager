@@ -10,3 +10,7 @@
 identity:
     resource: '../src/Identity/Infrastructure/Http/'
     type: attribute
+
+article:
+    resource: '../src/Article/Infrastructure/Http/'
+    type: attribute

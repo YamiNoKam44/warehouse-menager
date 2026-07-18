@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Artykuły | Warehouse Manager{% endblock %}
+
+{% block body %}
+<header class="content-header">
+    <div>
+        <p class="eyebrow">Administracja</p>
+        <h1>Artykuły</h1>
+        <p class="muted">Zarządzaj artykułami dostępnymi podczas operacji magazynowych.</p>
+    </div>
+
+    <a class="action-button" href="{{ path('admin_article_create') }}">
+        Dodaj artykuł
+    </a>
+</header>
+
+<section class="content-panel" aria-labelledby="article-list-heading">
+    <h2 id="article-list-heading" class="visually-hidden">Lista artykułów</h2>
+
+    <div class="table-scroll">
+        <table class="data-table">
+            <caption class="visually-hidden">Artykuły wraz z jednostkami miary</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Nazwa</th>
+                    <th scope="col">Jednostka miary</th>
+                    <th scope="col"><span class="visually-hidden">Akcje</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for article in articles %}
+                    <tr>
+                        <th scope="row">{{ article.name() }}</th>
+                        <td>{{ article.unitOfMeasure() }}</td>
+                        <td class="data-table__actions">
+                            <div class="table-actions">
+                                <a class="text-link" href="{{ path('admin_article_edit', {id: article.id()}) }}">
+                                    Edytuj
+                                </a>
+
+                                <form
+                                    class="delete-form"
+                                    method="post"
+                                    action="{{ path('admin_article_delete', {id: article.id()}) }}"
+                                    onsubmit="return confirm('Czy na pewno chcesz usunąć ten artykuł?');"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="_csrf_token"
+                                        value="{{ csrf_token('article_delete_' ~ article.id()) }}"
+                                    >
+                                    <button class="text-button text-button--danger" type="submit">
+                                        Usuń
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td class="empty-state" colspan="3">
+                            Nie dodano jeszcze żadnych artykułów.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% set nameMinimumLength = constant('App\\Article\\Domain\\Model\\Article::NAME_MIN_LENGTH') %}
+{% set nameMaximumLength = constant('App\\Article\\Domain\\Model\\Article::NAME_MAX_LENGTH') %}
+{% set unitMinimumLength = constant('App\\Article\\Domain\\Model\\Article::UNIT_OF_MEASURE_MIN_LENGTH') %}
+{% set unitMaximumLength = constant('App\\Article\\Domain\\Model\\Article::UNIT_OF_MEASURE_MAX_LENGTH') %}
+
+{% block title %}{{ heading }} | Warehouse Manager{% endblock %}
+
+{% block body %}
+<header class="content-header">
+    <div>
+        <p class="eyebrow">Administracja</p>
+        <h1>{{ heading }}</h1>
+        <p class="muted">Uzupełnij podstawowe dane artykułu.</p>
+    </div>
+
+    <a class="secondary-action" href="{{ path('admin_article_index') }}">
+        Wróć do listy
+    </a>
+</header>
+
+<section class="content-panel content-panel--form" aria-labelledby="article-form-heading">
+    <h2 id="article-form-heading" class="visually-hidden">{{ heading }}</h2>
+
+    {% if error %}
+        <div class="alert" role="alert">{{ error }}</div>
+    {% endif %}
+
+    <form class="article-form" method="post">
+        <div class="form-field">
+            <label for="article-name">Nazwa</label>
+            <input
+                id="article-name"
+                name="name"
+                type="text"
+                value="{{ data.name }}"
+                minlength="{{ nameMinimumLength }}"
+                maxlength="{{ nameMaximumLength }}"
+                aria-describedby="article-name-hint"
+                required
+                autofocus
+            >
+            <p id="article-name-hint" class="field-hint">
+                Od {{ nameMinimumLength }} do {{ nameMaximumLength }} znaków.
+            </p>
+        </div>
+
+        <div class="form-field">
+            <label for="article-unit-of-measure">Jednostka miary</label>
+            <input
+                id="article-unit-of-measure"
+                name="unit_of_measure"
+                type="text"
+                value="{{ data.unitOfMeasure }}"
+                minlength="{{ unitMinimumLength }}"
+                maxlength="{{ unitMaximumLength }}"
+                aria-describedby="article-unit-of-measure-hint"
+                required
+            >
+            <p id="article-unit-of-measure-hint" class="field-hint">
+                Na przykład: szt., kg, l lub m.
+            </p>
+        </div>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token(csrf_token_id) }}">
+
+        <div class="form-actions">
+            <button type="submit">{{ submit_label }}</button>
+            <a class="secondary-action" href="{{ path('admin_article_index') }}">Anuluj</a>
+        </div>
+    </form>
+</section>
+{% endblock %}
