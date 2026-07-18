@@ -1,0 +1,43 @@
+security:
+    role_hierarchy:
+        ROLE_ADMIN: ROLE_USER
+
+    password_hashers:
+        App\Identity\Infrastructure\Security\SecurityUser:
+            algorithm: bcrypt
+            cost: 13
+
+    providers:
+        database_users:
+            id: App\Identity\Infrastructure\Security\DatabaseUserProvider
+
+    firewalls:
+        dev:
+            pattern: ^/(_profiler|_wdt|assets|build|styles)/
+            security: false
+        main:
+            lazy: true
+            provider: database_users
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                username_parameter: login
+                password_parameter: password
+                enable_csrf: true
+                default_target_path: user_dashboard
+            logout:
+                path: app_logout
+                target: app_login
+                enable_csrf: true
+
+    access_control:
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: ROLE_USER }
+
+when@test:
+    security:
+        password_hashers:
+            App\Identity\Infrastructure\Security\SecurityUser:
+                algorithm: bcrypt
+                cost: 4
+

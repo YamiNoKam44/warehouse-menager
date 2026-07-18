@@ -1,0 +1,36 @@
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+        profiling_collect_backtrace: '%kernel.debug%'
+        default_table_options:
+            charset: utf8mb4
+            collate: utf8mb4_unicode_ci
+    orm:
+        validate_xml_mapping: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore
+        auto_mapping: false
+        mappings:
+            Identity:
+                type: xml
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Identity/Infrastructure/Persistence/Doctrine/Mapping'
+                prefix: 'App\Identity\Domain\Model'
+                alias: Identity
+
+when@prod:
+    doctrine:
+        orm:
+            query_cache_driver:
+                type: pool
+                pool: doctrine.system_cache_pool
+            result_cache_driver:
+                type: pool
+                pool: doctrine.result_cache_pool
+
+    framework:
+        cache:
+            pools:
+                doctrine.result_cache_pool:
+                    adapter: cache.app
+                doctrine.system_cache_pool:
+                    adapter: cache.system

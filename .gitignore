@@ -1,10 +1,78 @@
+### Symfony ###
 
-###> symfony/framework-bundle ###
+# Lokalne zmienne środowiskowe
 /.env.local
 /.env.local.php
 /.env.*.local
+
+# Prywatny klucz Symfony Secrets
 /config/secrets/prod/prod.decrypt.private.php
+
+# Pliki generowane
 /public/bundles/
+/public/assets/
+/assets/vendor/
 /var/
 /vendor/
-###< symfony/framework-bundle ###
+
+### Uploads ###
+
+# Pliki przesyłane przez użytkowników
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+### Tests and quality tools ###
+
+/.phpunit.cache/
+/.phpunit.result.cache
+/.phpstan.cache/
+/.php-cs-fixer.cache
+
+# Lokalne konfiguracje narzędzi
+/phpunit.xml
+/phpstan.neon
+/.php-cs-fixer.php
+
+### Front-end ###
+
+/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+### IDE ###
+
+# PhpStorm / IntelliJ IDEA
+/.idea/
+*.iml
+
+# VS Code - lokalne ustawienia
+/.vscode/
+
+# Fleet
+/.fleet/
+
+### Operating systems ###
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+.directory
+
+### Docker local files ###
+
+/compose.override.yaml
+/docker/var/
+/docker/data/
+
+### Local tools ###
+
+/.php-version
+/.tool-versions
