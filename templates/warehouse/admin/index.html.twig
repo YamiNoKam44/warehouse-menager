@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Magazyny | Warehouse Manager{% endblock %}
+
+{% block body %}
+<header class="content-header">
+    <div>
+        <p class="eyebrow">Administracja</p>
+        <h1>Magazyny</h1>
+        <p class="muted">Zarządzaj magazynami oraz przypisanymi do nich użytkownikami.</p>
+    </div>
+
+    <a class="action-button" href="{{ path('admin_warehouse_create') }}">Dodaj magazyn</a>
+</header>
+
+<section class="content-panel" aria-labelledby="warehouse-list-heading">
+    <h2 id="warehouse-list-heading" class="visually-hidden">Lista magazynów</h2>
+
+    <div class="table-scroll">
+        <table class="data-table">
+            <caption class="visually-hidden">Lista magazynów</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Nazwa</th>
+                    <th scope="col"><span class="visually-hidden">Akcje</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for warehouse in warehouses %}
+                    <tr>
+                        <th scope="row">{{ warehouse.name() }}</th>
+                        <td class="data-table__actions">
+                            <div class="table-actions">
+                                <a class="text-link" href="{{ path('admin_warehouse_edit', {id: warehouse.id()}) }}">Edytuj</a>
+
+                                <form
+                                    class="delete-form"
+                                    method="post"
+                                    action="{{ path('admin_warehouse_delete', {id: warehouse.id()}) }}"
+                                    onsubmit="return confirm('Czy na pewno chcesz usunąć ten magazyn?');"
+                                >
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('warehouse_delete_' ~ warehouse.id()) }}">
+                                    <button class="text-button text-button--danger" type="submit">Usuń</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td class="empty-state" colspan="2">Nie dodano jeszcze żadnych magazynów.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

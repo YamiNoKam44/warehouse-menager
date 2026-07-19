@@ -71,20 +71,14 @@ final class LoginTest extends WebTestCase
         self::assertSelectorExists('form.sidebar__logout-form[method="post"]');
     }
 
-    public function testInvalidCredentialsAreRejected(): void
+    public function testInvalidPasswordReturnsGenericMessage(): void
     {
-        $crawler = $this->client->request('GET', '/login');
-        $form = $crawler->filter('form[action="/login"]')->form([
-            'login' => 'operator',
-            'password' => 'nieprawidlowe',
-        ]);
+        $this->assertAuthenticationFailsGenerically('operator', 'nieprawidlowe');
+    }
 
-        $this->client->submit($form);
-
-        self::assertResponseRedirects('/login');
-
-        $this->client->followRedirect();
-        self::assertSelectorExists('[role="alert"]');
+    public function testUnknownLoginReturnsTheSameGenericMessage(): void
+    {
+        $this->assertAuthenticationFailsGenerically('nieistniejacy-uzytkownik', 'nieprawidlowe');
     }
 
     public function testUserCanLogOut(): void
@@ -101,6 +95,25 @@ final class LoginTest extends WebTestCase
         $this->client->submit($crawler->filter('form[action="/logout"]')->form());
 
         self::assertResponseRedirects('/login');
+    }
+
+    private function assertAuthenticationFailsGenerically(string $login, string $password): void
+    {
+        $crawler = $this->client->request('GET', '/login');
+        $form = $crawler->filter('form[action="/login"]')->form([
+            'login' => $login,
+            'password' => $password,
+        ]);
+
+        $this->client->submit($form);
+        self::assertResponseRedirects('/login');
+
+        $this->client->followRedirect();
+        self::assertSelectorTextSame(
+            '[role="alert"]',
+            'Logowanie nie powiodło się. Spróbuj ponownie.',
+        );
+        self::assertSelectorTextNotContains('[role="alert"]', $login);
     }
 
     private function testConnection(): Connection

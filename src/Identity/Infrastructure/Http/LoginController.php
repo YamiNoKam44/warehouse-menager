@@ -39,7 +39,7 @@ final readonly class LoginController
 
         return new Response($this->twig->render('identity/login.html.twig', [
             'last_username' => $this->authenticationUtils->getLastUsername(),
-            'error' => $this->authenticationUtils->getLastAuthenticationError(),
+            'authentication_failed' => null !== $this->authenticationUtils->getLastAuthenticationError(),
         ]));
     }
 }

@@ -44,9 +44,13 @@
 
                 <ul class="sidebar__list">
                     <li>
-                        <span class="sidebar__link sidebar__link--disabled">
+                        <a
+                            class="sidebar__link"
+                            href="{{ path('admin_warehouse_index') }}"
+                            {% if currentRoute starts with 'admin_warehouse_' %}aria-current="page"{% endif %}
+                        >
                             Magazyny
-                        </span>
+                        </a>
                     </li>
                     <li>
                         <span class="sidebar__link sidebar__link--disabled">

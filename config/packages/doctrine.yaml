@@ -22,6 +22,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Article/Infrastructure/Persistence/Doctrine/Mapping'
                 prefix: 'App\Article\Domain\Model'
                 alias: Article
+            Warehouse:
+                type: xml
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Warehouse/Infrastructure/Persistence/Doctrine/Mapping'
+                prefix: 'App\Warehouse\Domain\Model'
+                alias: Warehouse
 
 when@prod:
     doctrine:

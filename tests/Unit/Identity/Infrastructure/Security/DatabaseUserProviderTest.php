@@ -46,6 +46,18 @@ final class ProviderUserRepository implements UserRepository
     {
     }
 
+    public function all(): iterable
+    {
+        if (null !== $this->user) {
+            yield $this->user;
+        }
+    }
+
+    public function find(int $id): ?User
+    {
+        return null !== $this->user && $this->user->id() === $id ? $this->user : null;
+    }
+
     public function findByLogin(string $login): ?User
     {
         return null !== $this->user && $this->user->login() === User::normalizeLogin($login)

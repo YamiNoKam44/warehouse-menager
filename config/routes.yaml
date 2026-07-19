@@ -14,3 +14,7 @@ identity:
 article:
     resource: '../src/Article/Infrastructure/Http/'
     type: attribute
+
+warehouse:
+    resource: '../src/Warehouse/Infrastructure/Http/'
+    type: attribute

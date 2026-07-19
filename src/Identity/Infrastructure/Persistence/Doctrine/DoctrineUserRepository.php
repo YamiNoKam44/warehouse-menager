@@ -17,6 +17,13 @@ final readonly class DoctrineUserRepository implements UserRepository
     {
     }
 
+    public function find(int $id): ?User
+    {
+        $user = $this->entityManager->find(User::class, $id);
+
+        return $user instanceof User ? $user : null;
+    }
+
     public function findByLogin(string $login): ?User
     {
         try {

@@ -42,6 +42,19 @@ services:
     App\Article\Domain\Repository\ArticleRepository:
         alias: App\Article\Infrastructure\Persistence\Doctrine\DoctrineArticleRepository
 
+    App\Warehouse\Application\:
+        resource: '../src/Warehouse/Application/'
+        exclude:
+            - '../src/Warehouse/Application/Dto/'
+            - '../src/Warehouse/Application/Exception/'
+
+    App\Warehouse\Infrastructure\:
+        resource: '../src/Warehouse/Infrastructure/'
+        exclude: '../src/Warehouse/Infrastructure/Http/Form/WarehouseFormData.php'
+
+    App\Warehouse\Domain\Repository\WarehouseRepository:
+        alias: App\Warehouse\Infrastructure\Persistence\Doctrine\DoctrineWarehouseRepository
+
 when@dev:
     services:
         App\Identity\Infrastructure\Persistence\Doctrine\Fixtures\:
