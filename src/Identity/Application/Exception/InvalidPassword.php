@@ -6,6 +6,11 @@ namespace App\Identity\Application\Exception;
 
 final class InvalidPassword extends \DomainException
 {
+    public static function becauseRequired(): self
+    {
+        return new self('Hasło jest wymagane podczas tworzenia użytkownika.');
+    }
+
     public static function becauseOfLength(int $minimumLength, int $maximumLength): self
     {
         return new self(sprintf(

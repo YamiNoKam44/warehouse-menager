@@ -8,6 +8,9 @@ use App\Identity\Domain\Model\User;
 
 interface UserRepository
 {
+    /** @return iterable<User> */
+    public function all(): iterable;
+
     public function find(int $id): ?User;
 
     public function findByLogin(string $login): ?User;

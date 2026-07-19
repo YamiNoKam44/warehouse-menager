@@ -11,6 +11,9 @@ interface WarehouseRepository
     /** @return iterable<Warehouse> */
     public function all(): iterable;
 
+    /** @return iterable<Warehouse> */
+    public function assignedToUser(int $userId): iterable;
+
     public function find(int $id): ?Warehouse;
 
     public function save(Warehouse $warehouse): void;

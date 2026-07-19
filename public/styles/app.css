@@ -355,9 +355,9 @@ a.sidebar__link:hover,
     text-align: center;
 }
 
-.article-form,
-.warehouse-form,
-.form-field:first-child label {
+.article-form .form-field:first-child label,
+.warehouse-form .form-field:first-child label,
+.user-form .form-field:first-child label {
     margin-top: 0;
 }
 
@@ -371,15 +371,15 @@ a.sidebar__link:hover,
     font-size: 0.85rem;
 }
 
-.warehouse-form .form-field + .form-field {
+:is(.warehouse-form, .user-form) .form-field + .form-field {
     margin-top: 1.5rem;
 }
 
-.warehouse-form .ts-wrapper {
+:is(.warehouse-form, .user-form) .ts-wrapper {
     margin-top: 0.4rem;
 }
 
-.warehouse-form .ts-control {
+:is(.warehouse-form, .user-form) .ts-control {
     min-height: 3rem;
     padding: 0.65rem 0.8rem;
     border-color: #aeb9c3;
@@ -388,23 +388,23 @@ a.sidebar__link:hover,
     font: inherit;
 }
 
-.warehouse-form .ts-wrapper.focus .ts-control {
+:is(.warehouse-form, .user-form) .ts-wrapper.focus .ts-control {
     border-color: var(--color-accent-strong);
     box-shadow: 0 0 0 3px var(--color-accent-focus);
 }
 
-.warehouse-form .ts-wrapper.multi .ts-control > div {
+:is(.warehouse-form, .user-form) .ts-wrapper.multi .ts-control > div {
     color: var(--color-accent-ink);
     background: color-mix(in srgb, var(--color-accent) 42%, #fff);
 }
 
-.warehouse-form .ts-dropdown {
+:is(.warehouse-form, .user-form) .ts-dropdown {
     border-color: #c7d2d9;
     border-radius: 0.55rem;
     box-shadow: 0 0.6rem 1.4rem rgb(15 23 42 / 12%);
 }
 
-.warehouse-form .ts-dropdown .active {
+:is(.warehouse-form, .user-form) .ts-dropdown .active {
     color: var(--color-accent-ink);
     background: color-mix(in srgb, var(--color-accent) 24%, #fff);
 }

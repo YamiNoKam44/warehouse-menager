@@ -32,6 +32,25 @@ final readonly class DoctrineWarehouseRepository implements WarehouseRepository
         }
     }
 
+    public function assignedToUser(int $userId): iterable
+    {
+        $query = $this->entityManager
+            ->createQueryBuilder()
+            ->select('warehouse')
+            ->from(Warehouse::class, 'warehouse')
+            ->innerJoin('warehouse.users', 'assignedUser')
+            ->where('assignedUser.id = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('warehouse.name', 'ASC')
+            ->getQuery();
+
+        foreach ($query->getResult() as $warehouse) {
+            if ($warehouse instanceof Warehouse) {
+                yield $warehouse;
+            }
+        }
+    }
+
     /**
      * @throws OptimisticLockException
      * @throws ORMException

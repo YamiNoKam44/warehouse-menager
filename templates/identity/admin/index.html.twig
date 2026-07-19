@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Użytkownicy | Warehouse Manager{% endblock %}
+
+{% block body %}
+<header class="content-header">
+    <div>
+        <p class="eyebrow">Administracja</p>
+        <h1>Użytkownicy</h1>
+        <p class="muted">Twórz konta użytkowników i zarządzaj ich dostępem do magazynów.</p>
+    </div>
+
+    <a class="action-button" href="{{ path('admin_user_create') }}">Dodaj użytkownika</a>
+</header>
+
+<section class="content-panel" aria-labelledby="user-list-heading">
+    <h2 id="user-list-heading" class="visually-hidden">Lista użytkowników</h2>
+
+    <div class="table-scroll">
+        <table class="data-table">
+            <caption class="visually-hidden">Lista użytkowników</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Login</th>
+                    <th scope="col">Typ konta</th>
+                    <th scope="col"><span class="visually-hidden">Akcje</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <th scope="row">{{ user.login() }}</th>
+                        <td>{{ user.role().value == 'ROLE_ADMIN' ? 'Administrator' : 'Użytkownik' }}</td>
+                        <td class="data-table__actions">
+                            <a class="text-link" href="{{ path('admin_user_edit', {id: user.id()}) }}">Edytuj</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td class="empty-state" colspan="3">Nie dodano jeszcze żadnych użytkowników.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

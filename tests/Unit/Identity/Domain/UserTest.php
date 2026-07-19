@@ -28,6 +28,17 @@ final class UserTest extends TestCase
         self::assertSame(UserRole::ADMIN, $user->role());
     }
 
+    public function testItChangesLoginAndPasswordHash(): void
+    {
+        $user = User::restore(42, 'operator', 'old-hash', UserRole::USER);
+
+        $user->rename('  Nowy.Login  ');
+        $user->changePasswordHash('new-hash');
+
+        self::assertSame('nowy.login', $user->login());
+        self::assertSame('new-hash', $user->passwordHash());
+    }
+
     public function testItRejectsInvalidLogin(): void
     {
         $this->expectException(InvalidLogin::class);
