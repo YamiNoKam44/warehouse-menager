@@ -8,8 +8,8 @@
     <h1 id="login-heading">Zaloguj się</h1>
     <p class="muted">Podaj dane dostępowe do przypisanych magazynów.</p>
 
-    {% if error %}
-        <div class="alert" role="alert">Nieprawidłowy login lub hasło.</div>
+    {% if authentication_failed %}
+        <div class="alert" role="alert">Logowanie nie powiodło się. Spróbuj ponownie.</div>
     {% endif %}
 
     <form method="post" action="{{ path('app_login') }}">

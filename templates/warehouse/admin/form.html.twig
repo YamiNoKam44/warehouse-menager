@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ heading }} | Warehouse Manager{% endblock %}
+
+{% block body %}
+<header class="content-header">
+    <div>
+        <p class="eyebrow">Administracja</p>
+        <h1>{{ heading }}</h1>
+        <p class="muted">Podaj nazwę magazynu i wybierz osoby, które mają mieć do niego dostęp.</p>
+    </div>
+
+    <a class="secondary-action" href="{{ path('admin_warehouse_index') }}">Wróć do listy</a>
+</header>
+
+<section class="content-panel content-panel--form" aria-labelledby="warehouse-form-heading">
+    <h2 id="warehouse-form-heading" class="visually-hidden">{{ heading }}</h2>
+
+    {{ form_start(form, {attr: {class: 'warehouse-form'}}) }}
+        {% if not form.vars.valid %}
+            <div class="alert" role="alert">
+                {{ form_errors(form) }}
+            </div>
+        {% endif %}
+
+        <div class="form-field">
+            {{ form_label(form.name) }}
+            {{ form_widget(form.name) }}
+            {{ form_help(form.name) }}
+            {{ form_errors(form.name) }}
+        </div>
+
+        <div class="form-field">
+            {{ form_label(form.assignedUsers) }}
+            {{ form_widget(form.assignedUsers) }}
+            {{ form_help(form.assignedUsers) }}
+            {{ form_errors(form.assignedUsers) }}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">{{ submit_label }}</button>
+            <a class="secondary-action" href="{{ path('admin_warehouse_index') }}">Anuluj</a>
+        </div>
+    {{ form_end(form) }}
+</section>
+{% endblock %}

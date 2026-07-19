@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Warehouse Manager{% endblock %}</title>
     <link rel="stylesheet" href="/styles/app.css">
+    {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
+    {% endblock %}
 </head>
 <body class="{{ app.user ? 'has-sidebar' : 'is-auth-page' }}">
     <a class="skip-link" href="#main-content">Przejdź do treści</a>

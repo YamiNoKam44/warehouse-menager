@@ -39,6 +39,16 @@ final class InMemoryUserRepository implements UserRepository
 {
     public ?User $saved = null;
 
+    public function all(): iterable
+    {
+        return new \EmptyIterator();
+    }
+
+    public function find(int $id): ?User
+    {
+        return null;
+    }
+
     public function findByLogin(string $login): ?User
     {
         return null;

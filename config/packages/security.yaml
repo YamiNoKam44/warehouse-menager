@@ -1,4 +1,6 @@
 security:
+    expose_security_errors: 'none'
+
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER
 
@@ -25,6 +27,9 @@ security:
                 password_parameter: password
                 enable_csrf: true
                 default_target_path: user_dashboard
+            login_throttling:
+                max_attempts: 5
+                interval: '1 minute'
             logout:
                 path: app_logout
                 target: app_login
