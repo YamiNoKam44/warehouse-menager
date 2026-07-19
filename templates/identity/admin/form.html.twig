@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ heading }} | Warehouse Manager{% endblock %}
+
+{% block body %}
+<header class="content-header">
+    <div>
+        <p class="eyebrow">Administracja</p>
+        <h1>{{ heading }}</h1>
+        <p class="muted">
+            {{ password_required
+                ? 'Podaj dane konta i wybierz magazyny dostępne dla użytkownika.'
+                : 'Zmień dane konta lub przypisane magazyny. Hasło możesz pozostawić bez zmian.'
+            }}
+        </p>
+    </div>
+
+    <a class="secondary-action" href="{{ path('admin_user_index') }}">Wróć do listy</a>
+</header>
+
+<section class="content-panel content-panel--form" aria-labelledby="user-form-heading">
+    <h2 id="user-form-heading" class="visually-hidden">{{ heading }}</h2>
+
+    {{ form_start(form, {attr: {class: 'user-form'}}) }}
+        {% if not form.vars.valid %}
+            <div class="alert" role="alert">
+                {{ form_errors(form) }}
+            </div>
+        {% endif %}
+
+        <div class="form-field">
+            {{ form_label(form.login) }}
+            {{ form_widget(form.login) }}
+            {{ form_help(form.login) }}
+            {{ form_errors(form.login) }}
+        </div>
+
+        <div class="form-field">
+            {{ form_label(form.plainPassword) }}
+            {{ form_widget(form.plainPassword) }}
+            {{ form_help(form.plainPassword) }}
+            {{ form_errors(form.plainPassword) }}
+        </div>
+
+        <div class="form-field">
+            {{ form_label(form.assignedWarehouses) }}
+            {{ form_widget(form.assignedWarehouses) }}
+            {{ form_help(form.assignedWarehouses) }}
+            {{ form_errors(form.assignedWarehouses) }}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">{{ submit_label }}</button>
+            <a class="secondary-action" href="{{ path('admin_user_index') }}">Anuluj</a>
+        </div>
+    {{ form_end(form) }}
+</section>
+{% endblock %}

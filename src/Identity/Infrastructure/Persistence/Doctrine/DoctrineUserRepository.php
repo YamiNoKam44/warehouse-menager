@@ -17,6 +17,22 @@ final readonly class DoctrineUserRepository implements UserRepository
     {
     }
 
+    public function all(): iterable
+    {
+        $query = $this->entityManager
+            ->createQueryBuilder()
+            ->select('user')
+            ->from(User::class, 'user')
+            ->orderBy('user.login', 'ASC')
+            ->getQuery();
+
+        foreach ($query->toIterable() as $user) {
+            if ($user instanceof User) {
+                yield $user;
+            }
+        }
+    }
+
     public function find(int $id): ?User
     {
         $user = $this->entityManager->find(User::class, $id);

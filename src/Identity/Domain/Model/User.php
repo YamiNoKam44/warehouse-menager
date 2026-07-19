@@ -12,7 +12,7 @@ final class User
     public const int LOGIN_MAX_LENGTH = 180;
     public const int PASSWORD_HASH_MAX_LENGTH = 255;
 
-    private const string LOGIN_PATTERN = '/\A[a-z0-9][a-z0-9._-]*\z/';
+    public const string LOGIN_PATTERN = '/\A[a-z0-9][a-z0-9._-]*\z/';
 
     private ?int $id;
     private string $login;
@@ -78,6 +78,16 @@ final class User
     public function role(): UserRole
     {
         return $this->role;
+    }
+
+    public function rename(string $login): void
+    {
+        $this->login = self::normalizeLogin($login);
+    }
+
+    public function changePasswordHash(string $passwordHash): void
+    {
+        $this->passwordHash = self::validatePasswordHash($passwordHash);
     }
 
     private static function validatePasswordHash(string $passwordHash): string

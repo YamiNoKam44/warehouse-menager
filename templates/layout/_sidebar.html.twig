@@ -53,9 +53,13 @@
                         </a>
                     </li>
                     <li>
-                        <span class="sidebar__link sidebar__link--disabled">
+                        <a
+                            class="sidebar__link"
+                            href="{{ path('admin_user_index') }}"
+                            {% if currentRoute starts with 'admin_user_' %}aria-current="page"{% endif %}
+                        >
                             Użytkownicy
-                        </span>
+                        </a>
                     </li>
                     <li>
                         <a

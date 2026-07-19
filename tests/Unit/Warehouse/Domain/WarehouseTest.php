@@ -39,6 +39,22 @@ final class WarehouseTest extends TestCase
         }
     }
 
+    public function testItAssignsAndUnassignsUserByStableIdentity(): void
+    {
+        $user = User::restore(5, 'operator', 'hash', UserRole::USER);
+        $sameUser = User::restore(5, 'operator', 'hash', UserRole::USER);
+        $warehouse = Warehouse::restore(2, 'Magazyn główny');
+
+        $warehouse->assignUser($user);
+        $warehouse->assignUser($sameUser);
+
+        self::assertSame(1, $warehouse->assignedUserCount());
+
+        $warehouse->unassignUser($sameUser);
+
+        self::assertSame(0, $warehouse->assignedUserCount());
+    }
+
     public function testItRejectsNameOutsideDefinedLength(): void
     {
         $this->expectException(InvalidWarehouseData::class);

@@ -16,13 +16,16 @@ services:
 
     App\Identity\Application\:
         resource: '../src/Identity/Application/'
-        exclude: '../src/Identity/Application/Exception/'
+        exclude:
+            - '../src/Identity/Application/Dto/'
+            - '../src/Identity/Application/Exception/'
 
     App\Identity\Infrastructure\:
         resource: '../src/Identity/Infrastructure/'
         exclude:
             - '../src/Identity/Infrastructure/Security/SecurityUser.php'
             - '../src/Identity/Infrastructure/Persistence/Doctrine/Fixtures/'
+            - '../src/Identity/Infrastructure/Http/Form/UserFormData.php'
 
     App\Identity\Domain\Repository\UserRepository:
         alias: App\Identity\Infrastructure\Persistence\Doctrine\DoctrineUserRepository

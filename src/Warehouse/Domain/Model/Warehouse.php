@@ -86,6 +86,35 @@ final class Warehouse
         $this->replaceUsers($users);
     }
 
+    public function assignUser(User $user): void
+    {
+        $assignedUsers = [];
+
+        foreach ($this->users as $assignedUser) {
+            if (self::isSameUser($assignedUser, $user)) {
+                return;
+            }
+
+            $assignedUsers[] = $assignedUser;
+        }
+
+        $assignedUsers[] = $user;
+        $this->users = $assignedUsers;
+    }
+
+    public function unassignUser(User $user): void
+    {
+        $assignedUsers = [];
+
+        foreach ($this->users as $assignedUser) {
+            if (!self::isSameUser($assignedUser, $user)) {
+                $assignedUsers[] = $assignedUser;
+            }
+        }
+
+        $this->users = $assignedUsers;
+    }
+
     /**
      * @param iterable<User> $users
      */
@@ -100,6 +129,18 @@ final class Warehouse
         }
 
         $this->users = $assignedUsers;
+    }
+
+    private static function isSameUser(User $first, User $second): bool
+    {
+        $firstId = $first->id();
+        $secondId = $second->id();
+
+        if (null !== $firstId && null !== $secondId) {
+            return $firstId === $secondId;
+        }
+
+        return $first === $second;
     }
 
     private static function normalizeName(string $name): string
