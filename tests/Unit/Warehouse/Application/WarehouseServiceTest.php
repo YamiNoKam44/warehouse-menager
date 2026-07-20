@@ -14,6 +14,7 @@ use App\Warehouse\Application\Service\WarehouseService;
 use App\Warehouse\Domain\Exception\InvalidWarehouseData;
 use App\Warehouse\Domain\Model\Warehouse;
 use App\Warehouse\Domain\Repository\WarehouseRepository;
+use App\Tests\Support\InMemoryUnitOfWork;
 use PHPUnit\Framework\TestCase;
 
 final class WarehouseServiceTest extends TestCase
@@ -22,7 +23,9 @@ final class WarehouseServiceTest extends TestCase
     {
         $user = User::restore(4, 'operator', 'hash', UserRole::USER);
         $users = $this->createMock(UserRepository::class);
-        $users->expects(self::once())->method('find')->with(4)->willReturn($user);
+        $users->expects(self::once())
+            ->method('findByIds')
+            ->willReturn(new \ArrayIterator([$user]));
 
         $warehouses = $this->createMock(WarehouseRepository::class);
         $warehouses->expects(self::once())
@@ -32,7 +35,7 @@ final class WarehouseServiceTest extends TestCase
                 && 1 === $warehouse->assignedUserCount()
             ));
 
-        $warehouse = (new WarehouseService($warehouses, $users))->create(
+        $warehouse = (new WarehouseService($warehouses, $users, new InMemoryUnitOfWork()))->create(
             new WarehouseData('Magazyn główny', AssignedUserIds::fromInput(['4'])),
         );
 
@@ -44,12 +47,14 @@ final class WarehouseServiceTest extends TestCase
         $user = User::restore(7, 'magazynier', 'hash', UserRole::USER);
         $warehouse = Warehouse::restore(3, 'Stara nazwa');
         $users = $this->createMock(UserRepository::class);
-        $users->expects(self::once())->method('find')->with(7)->willReturn($user);
+        $users->expects(self::once())
+            ->method('findByIds')
+            ->willReturn(new \ArrayIterator([$user]));
         $warehouses = $this->createMock(WarehouseRepository::class);
         $warehouses->expects(self::once())->method('find')->with(3)->willReturn($warehouse);
         $warehouses->expects(self::once())->method('save')->with($warehouse);
 
-        (new WarehouseService($warehouses, $users))->update(
+        (new WarehouseService($warehouses, $users, new InMemoryUnitOfWork()))->update(
             3,
             new WarehouseData('Nowa nazwa', AssignedUserIds::fromInput([7])),
         );
@@ -61,13 +66,13 @@ final class WarehouseServiceTest extends TestCase
     public function testItRejectsUnknownAssignedUser(): void
     {
         $users = $this->createMock(UserRepository::class);
-        $users->expects(self::once())->method('find')->with(99)->willReturn(null);
+        $users->expects(self::once())->method('findByIds')->willReturn(new \EmptyIterator());
         $warehouses = $this->createMock(WarehouseRepository::class);
         $warehouses->expects(self::never())->method('save');
 
         $this->expectException(InvalidWarehouseData::class);
 
-        (new WarehouseService($warehouses, $users))->create(
+        (new WarehouseService($warehouses, $users, new InMemoryUnitOfWork()))->create(
             new WarehouseData('Magazyn', AssignedUserIds::fromInput([99])),
         );
     }
@@ -80,7 +85,7 @@ final class WarehouseServiceTest extends TestCase
         $warehouses->expects(self::once())->method('remove')->with($warehouse);
         $users = $this->createStub(UserRepository::class);
 
-        (new WarehouseService($warehouses, $users))->delete(8);
+        (new WarehouseService($warehouses, $users, new InMemoryUnitOfWork()))->delete(8);
     }
 
     public function testItCannotDeleteMissingWarehouse(): void
@@ -92,6 +97,6 @@ final class WarehouseServiceTest extends TestCase
 
         $this->expectException(WarehouseNotFound::class);
 
-        (new WarehouseService($warehouses, $users))->delete(99);
+        (new WarehouseService($warehouses, $users, new InMemoryUnitOfWork()))->delete(99);
     }
 }

@@ -10,6 +10,8 @@ use App\Identity\Application\Service\UserService;
 use App\Identity\Domain\Exception\InvalidLogin;
 use App\Identity\Domain\Exception\UserAlreadyExists;
 use App\Identity\Domain\Repository\UserRepository;
+use App\Identity\Infrastructure\Http\Dto\UserFormViewData;
+use App\Identity\Infrastructure\Http\Dto\UserIndexViewData;
 use App\Identity\Infrastructure\Http\Form\UserFormData;
 use App\Identity\Infrastructure\Http\Form\UserType;
 use App\Warehouse\Application\Exception\WarehouseNotFound;
@@ -38,15 +40,22 @@ final readonly class AdminUserController
     ) {
     }
 
-    #[Route('/admin/users', name: 'admin_user_index', methods: ['GET'])]
+    #[Route('/admin/users', name: 'admin_user_index', methods: [Request::METHOD_GET])]
     public function index(): Response
     {
-        return new Response($this->twig->render('identity/admin/index.html.twig', [
-            'users' => $this->users->all(),
-        ]));
+        $viewData = new UserIndexViewData($this->users->all());
+
+        return new Response($this->twig->render(
+            'identity/admin/index.html.twig',
+            $viewData->toArray(),
+        ));
     }
 
-    #[Route('/admin/users/create', name: 'admin_user_create', methods: ['GET', 'POST'])]
+    #[Route(
+        '/admin/users/create',
+        name: 'admin_user_create',
+        methods: [Request::METHOD_GET, Request::METHOD_POST],
+    )]
     public function create(Request $request): Response
     {
         $data = new UserFormData();
@@ -70,11 +79,11 @@ final readonly class AdminUserController
         '/admin/users/{id}/edit',
         name: 'admin_user_edit',
         requirements: ['id' => '\d+'],
-        methods: ['GET', 'POST'],
+        methods: [Request::METHOD_GET, Request::METHOD_POST],
     )]
     public function edit(int $id, Request $request): Response
     {
-        $data = $request->isMethod('POST')
+        $data = $request->isMethod(Request::METHOD_POST)
             ? new UserFormData()
             : $this->formDataFor($id);
         $form = $this->createForm($data, 'admin_user_edit', false, $id);
@@ -103,7 +112,7 @@ final readonly class AdminUserController
     ): FormInterface {
         return $this->forms->create(UserType::class, $data, [
             'action' => $this->urls->generate($route, null === $id ? [] : ['id' => $id]),
-            'method' => 'POST',
+            'method' => Request::METHOD_POST,
             'password_required' => $passwordRequired,
         ]);
     }
@@ -125,12 +134,12 @@ final readonly class AdminUserController
         bool $passwordRequired,
         FormView $form,
     ): Response {
-        return new Response($this->twig->render('identity/admin/form.html.twig', [
-            'heading' => $heading,
-            'submit_label' => $submitLabel,
-            'password_required' => $passwordRequired,
-            'form' => $form,
-        ]));
+        $viewData = new UserFormViewData($heading, $submitLabel, $passwordRequired, $form);
+
+        return new Response($this->twig->render(
+            'identity/admin/form.html.twig',
+            $viewData->toArray(),
+        ));
     }
 
     private function redirectToIndex(): RedirectResponse

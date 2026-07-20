@@ -9,6 +9,7 @@ use App\Identity\Application\Port\PasswordHasher;
 use App\Identity\Domain\Model\User;
 use App\Identity\Domain\Repository\UserRepository;
 use App\Identity\Infrastructure\Console\CreateUserCommand;
+use App\Tests\Support\InMemoryUnitOfWork;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -18,7 +19,11 @@ final class CreateUserCommandTest extends TestCase
     public function testItCreatesUserUsingHiddenPasswordPrompts(): void
     {
         $users = new ConsoleUserRepository();
-        $createUser = new CreateUser($users, new ConsolePasswordHasher());
+        $createUser = new CreateUser(
+            $users,
+            new ConsolePasswordHasher(),
+            new InMemoryUnitOfWork(),
+        );
         $tester = new CommandTester(new CreateUserCommand($createUser));
         $tester->setInputs(['bezpieczne-haslo', 'bezpieczne-haslo']);
 
@@ -32,7 +37,11 @@ final class CreateUserCommandTest extends TestCase
     public function testItRejectsDifferentPasswordConfirmation(): void
     {
         $users = new ConsoleUserRepository();
-        $createUser = new CreateUser($users, new ConsolePasswordHasher());
+        $createUser = new CreateUser(
+            $users,
+            new ConsolePasswordHasher(),
+            new InMemoryUnitOfWork(),
+        );
         $tester = new CommandTester(new CreateUserCommand($createUser));
         $tester->setInputs(['bezpieczne-haslo', 'inne-bezpieczne-haslo']);
 
@@ -49,6 +58,11 @@ final class ConsoleUserRepository implements UserRepository
     public ?User $saved = null;
 
     public function all(): iterable
+    {
+        return new \EmptyIterator();
+    }
+
+    public function findByIds(iterable $ids): iterable
     {
         return new \EmptyIterator();
     }
@@ -73,6 +87,6 @@ final class ConsolePasswordHasher implements PasswordHasher
 {
     public function hash(#[\SensitiveParameter] string $plainPassword): string
     {
-        return 'hashed:'.$plainPassword;
+        return sprintf('hashed:%s', $plainPassword);
     }
 }

@@ -9,6 +9,8 @@ use App\Warehouse\Application\Service\WarehouseService;
 use App\Warehouse\Domain\Exception\InvalidWarehouseData;
 use App\Warehouse\Domain\Exception\WarehouseInUse;
 use App\Warehouse\Domain\Repository\WarehouseRepository;
+use App\Warehouse\Infrastructure\Http\Dto\WarehouseFormViewData;
+use App\Warehouse\Infrastructure\Http\Dto\WarehouseIndexViewData;
 use App\Warehouse\Infrastructure\Http\Form\WarehouseFormData;
 use App\Warehouse\Infrastructure\Http\Form\WarehouseType;
 use Symfony\Component\Form\FormError;
@@ -38,15 +40,22 @@ final readonly class AdminWarehouseController
     ) {
     }
 
-    #[Route('/admin/warehouses', name: 'admin_warehouse_index', methods: ['GET'])]
+    #[Route('/admin/warehouses', name: 'admin_warehouse_index', methods: [Request::METHOD_GET])]
     public function index(): Response
     {
-        return new Response($this->twig->render('warehouse/admin/index.html.twig', [
-            'warehouses' => $this->warehouses->all(),
-        ]));
+        $viewData = new WarehouseIndexViewData($this->warehouses->all());
+
+        return new Response($this->twig->render(
+            'warehouse/admin/index.html.twig',
+            $viewData->toArray(),
+        ));
     }
 
-    #[Route('/admin/warehouses/create', name: 'admin_warehouse_create', methods: ['GET', 'POST'])]
+    #[Route(
+        '/admin/warehouses/create',
+        name: 'admin_warehouse_create',
+        methods: [Request::METHOD_GET, Request::METHOD_POST],
+    )]
     public function create(Request $request): Response
     {
         $data = new WarehouseFormData();
@@ -74,11 +83,11 @@ final readonly class AdminWarehouseController
         '/admin/warehouses/{id}/edit',
         name: 'admin_warehouse_edit',
         requirements: ['id' => '\d+'],
-        methods: ['GET', 'POST'],
+        methods: [Request::METHOD_GET, Request::METHOD_POST],
     )]
     public function edit(int $id, Request $request): Response
     {
-        $data = $request->isMethod('POST')
+        $data = $request->isMethod(Request::METHOD_POST)
             ? new WarehouseFormData()
             : $this->formDataFor($id);
         $form = $this->createForm($data, 'admin_warehouse_edit', $id);
@@ -107,11 +116,11 @@ final readonly class AdminWarehouseController
         '/admin/warehouses/{id}/delete',
         name: 'admin_warehouse_delete',
         requirements: ['id' => '\d+'],
-        methods: ['POST'],
+        methods: [Request::METHOD_POST],
     )]
     public function delete(int $id, Request $request): Response
     {
-        $this->assertCsrfToken($request, 'warehouse_delete_'.$id);
+        $this->assertCsrfToken($request, sprintf('warehouse_delete_%d', $id));
 
         try {
             $this->warehouseService->delete($id);
@@ -133,7 +142,7 @@ final readonly class AdminWarehouseController
 
         return $this->forms->create(WarehouseType::class, $data, [
             'action' => $this->urls->generate($route, $routeParameters),
-            'method' => 'POST',
+            'method' => Request::METHOD_POST,
         ]);
     }
 
@@ -162,11 +171,12 @@ final readonly class AdminWarehouseController
         string $submitLabel,
         FormView $form,
     ): Response {
-        return new Response($this->twig->render('warehouse/admin/form.html.twig', [
-            'heading' => $heading,
-            'submit_label' => $submitLabel,
-            'form' => $form,
-        ]));
+        $viewData = new WarehouseFormViewData($heading, $submitLabel, $form);
+
+        return new Response($this->twig->render(
+            'warehouse/admin/form.html.twig',
+            $viewData->toArray(),
+        ));
     }
 
     private function redirectToIndex(): RedirectResponse

@@ -10,6 +10,7 @@ use App\Identity\Application\Port\PasswordHasher;
 use App\Identity\Domain\Model\User;
 use App\Identity\Domain\Model\UserRole;
 use App\Identity\Domain\Repository\UserRepository;
+use App\Shared\Application\Port\UnitOfWork;
 use App\Stock\Application\Dto\ReceiptData;
 use App\Stock\Application\Dto\ReceiptDocumentUploads;
 use App\Stock\Application\Exception\StockReceiptAccessDenied;
@@ -22,6 +23,7 @@ use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 final class StockReceiptTest extends WebTestCase
@@ -56,6 +58,7 @@ final class StockReceiptTest extends WebTestCase
         $articles = self::getContainer()->get(ArticleRepository::class);
         $this->article = Article::create('Cement', 'kg');
         $articles->save($this->article);
+        self::getContainer()->get(UnitOfWork::class)->commit();
     }
 
     protected function tearDown(): void
@@ -76,7 +79,7 @@ final class StockReceiptTest extends WebTestCase
     {
         $this->logIn('operator');
 
-        $crawler = $this->client->request('GET', self::RECEIPT_URL);
+        $crawler = $this->client->request(Request::METHOD_GET, self::RECEIPT_URL);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(sprintf(
@@ -101,7 +104,7 @@ final class StockReceiptTest extends WebTestCase
         self::assertSelectorExists('#stock_receipt_vatRate option[value="23"]');
 
         $this->client->request(
-            'POST',
+            Request::METHOD_POST,
             self::RECEIPT_URL,
             [
                 'stock_receipt' => [
@@ -124,7 +127,7 @@ final class StockReceiptTest extends WebTestCase
         );
 
         self::assertResponseStatusCodeSame(Response::HTTP_SEE_OTHER);
-        self::assertResponseRedirects(self::RECEIPT_URL.'?saved=1');
+        self::assertResponseRedirects(sprintf('%s?saved=1', self::RECEIPT_URL));
 
         $this->client->followRedirect();
         self::assertSelectorTextContains('.notice', 'Przyjęcie towaru zostało zapisane.');
@@ -155,10 +158,17 @@ final class StockReceiptTest extends WebTestCase
                 '/\A[a-f0-9]{32}\.(pdf|xml)\z/',
                 $document['stored_name'],
             );
-            self::assertFileExists($this->storageDirectory().'/'.$document['stored_name']);
+            self::assertFileExists(sprintf(
+                '%s/%s',
+                $this->storageDirectory(),
+                $document['stored_name'],
+            ));
             self::assertFileDoesNotExist(
-                self::getContainer()->getParameter('kernel.project_dir')
-                .'/public/'.$document['stored_name'],
+                sprintf(
+                    '%s/public/%s',
+                    self::getContainer()->getParameter('kernel.project_dir'),
+                    $document['stored_name'],
+                ),
             );
         }
     }
@@ -167,10 +177,10 @@ final class StockReceiptTest extends WebTestCase
     {
         $this->logIn('operator');
 
-        $crawler = $this->client->request('GET', self::RECEIPT_URL);
+        $crawler = $this->client->request(Request::METHOD_GET, self::RECEIPT_URL);
 
         $this->client->request(
-            'POST',
+            Request::METHOD_POST,
             self::RECEIPT_URL,
             [
                 'stock_receipt' => [
@@ -203,10 +213,10 @@ final class StockReceiptTest extends WebTestCase
     {
         $this->logIn('operator');
 
-        $crawler = $this->client->request('GET', self::RECEIPT_URL);
+        $crawler = $this->client->request(Request::METHOD_GET, self::RECEIPT_URL);
 
         $this->client->request(
-            'POST',
+            Request::METHOD_POST,
             self::RECEIPT_URL,
             [
                 'stock_receipt' => [
@@ -242,7 +252,7 @@ final class StockReceiptTest extends WebTestCase
         );
 
         $this->logIn('operator');
-        $crawler = $this->client->request('GET', self::RECEIPT_URL);
+        $crawler = $this->client->request(Request::METHOD_GET, self::RECEIPT_URL);
         $documents = [];
 
         for ($number = 1; $number <= StockReceipt::MAX_DOCUMENTS + 1; ++$number) {
@@ -253,7 +263,7 @@ final class StockReceiptTest extends WebTestCase
         }
 
         $this->client->request(
-            'POST',
+            Request::METHOD_POST,
             self::RECEIPT_URL,
             [
                 'stock_receipt' => [
@@ -301,7 +311,7 @@ final class StockReceiptTest extends WebTestCase
     {
         $this->logIn('admin');
 
-        $this->client->request('GET', self::RECEIPT_URL);
+        $this->client->request(Request::METHOD_GET, self::RECEIPT_URL);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(sprintf(
@@ -316,7 +326,7 @@ final class StockReceiptTest extends WebTestCase
 
     private function logIn(string $login): void
     {
-        $crawler = $this->client->request('GET', '/login');
+        $crawler = $this->client->request(Request::METHOD_GET, '/login');
         $form = $crawler->filter('form[action="/login"]')->form([
             'login' => $login,
             'password' => self::PASSWORD,
@@ -333,6 +343,7 @@ final class StockReceiptTest extends WebTestCase
         $users = self::getContainer()->get(UserRepository::class);
         $user = User::register($login, $passwordHasher->hash(self::PASSWORD), $role);
         $users->save($user);
+        self::getContainer()->get(UnitOfWork::class)->commit();
 
         return $user;
     }
@@ -364,7 +375,7 @@ final class StockReceiptTest extends WebTestCase
 
     private function clearStoredDocuments(): void
     {
-        $paths = glob($this->storageDirectory().'/*');
+        $paths = glob(sprintf('%s/*', $this->storageDirectory()));
 
         if (false === $paths) {
             return;

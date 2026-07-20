@@ -8,6 +8,7 @@ use App\Identity\Application\CreateUser;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Request;
 
 final class LoginTest extends WebTestCase
 {
@@ -48,14 +49,14 @@ final class LoginTest extends WebTestCase
 
     public function testAnonymousUserIsRedirectedToLogin(): void
     {
-        $this->client->request('GET', '/');
+        $this->client->request(Request::METHOD_GET, '/');
 
         self::assertResponseRedirects('http://localhost/login');
     }
 
     public function testUserCanLogInUsingDatabaseAdapter(): void
     {
-        $crawler = $this->client->request('GET', '/login');
+        $crawler = $this->client->request(Request::METHOD_GET, '/login');
 
         self::assertSelectorNotExists('aside.sidebar');
 
@@ -89,7 +90,7 @@ final class LoginTest extends WebTestCase
 
     public function testUserCanLogOut(): void
     {
-        $crawler = $this->client->request('GET', '/login');
+        $crawler = $this->client->request(Request::METHOD_GET, '/login');
         $form = $crawler->filter('form[action="/login"]')->form([
             'login' => 'operator',
             'password' => 'bezpieczne-haslo',
@@ -105,7 +106,7 @@ final class LoginTest extends WebTestCase
 
     private function assertAuthenticationFailsGenerically(string $login, string $password): void
     {
-        $crawler = $this->client->request('GET', '/login');
+        $crawler = $this->client->request(Request::METHOD_GET, '/login');
         $form = $crawler->filter('form[action="/login"]')->form([
             'login' => $login,
             'password' => $password,

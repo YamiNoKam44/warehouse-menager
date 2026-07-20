@@ -13,7 +13,7 @@ final class DomainIndependenceTest extends TestCase
 {
     public function testDomainAndApplicationLayersPointInward(): void
     {
-        $sourceDirectory = realpath(__DIR__.'/../../src');
+        $sourceDirectory = realpath(sprintf('%s/../../src', __DIR__));
 
         self::assertNotFalse($sourceDirectory);
 

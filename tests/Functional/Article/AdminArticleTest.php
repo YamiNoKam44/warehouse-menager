@@ -10,6 +10,7 @@ use App\Identity\Application\Port\PasswordHasher;
 use App\Identity\Domain\Model\User;
 use App\Identity\Domain\Model\UserRole;
 use App\Identity\Domain\Repository\UserRepository;
+use App\Shared\Application\Port\UnitOfWork;
 use App\Stock\Domain\Model\StockIssue;
 use App\Stock\Domain\Repository\StockIssueRepository;
 use App\Warehouse\Domain\Model\Warehouse;
@@ -17,6 +18,7 @@ use App\Warehouse\Domain\Repository\WarehouseRepository;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 final class AdminArticleTest extends WebTestCase
@@ -45,7 +47,7 @@ final class AdminArticleTest extends WebTestCase
     {
         $this->logIn('operator');
 
-        $this->client->request('GET', '/admin/articles');
+        $this->client->request(Request::METHOD_GET, '/admin/articles');
 
         self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
@@ -54,7 +56,7 @@ final class AdminArticleTest extends WebTestCase
     {
         $this->logIn('admin');
 
-        $crawler = $this->client->request('GET', '/admin/articles/create');
+        $crawler = $this->client->request(Request::METHOD_GET, '/admin/articles/create');
         self::assertResponseIsSuccessful();
 
         $form = $crawler->filter('form.article-form')->form([
@@ -76,7 +78,7 @@ final class AdminArticleTest extends WebTestCase
         );
         self::assertGreaterThan(0, $articleId);
 
-        $crawler = $this->client->request('GET', sprintf('/admin/articles/%d/edit', $articleId));
+        $crawler = $this->client->request(Request::METHOD_GET, sprintf('/admin/articles/%d/edit', $articleId));
         $form = $crawler->filter('form.article-form')->form([
             'name' => 'Taśma wzmacniana',
             'unit_of_measure' => 'rolka',
@@ -124,8 +126,9 @@ final class AdminArticleTest extends WebTestCase
             '1',
             new \DateTimeImmutable(),
         ));
+        self::getContainer()->get(UnitOfWork::class)->commit();
 
-        $crawler = $this->client->request('GET', '/admin/articles');
+        $crawler = $this->client->request(Request::METHOD_GET, '/admin/articles');
         $deleteForm = $crawler
             ->filter(sprintf('form[action="/admin/articles/%d/delete"]', $article->id()))
             ->form();
@@ -143,7 +146,7 @@ final class AdminArticleTest extends WebTestCase
 
     private function logIn(string $login): void
     {
-        $crawler = $this->client->request('GET', '/login');
+        $crawler = $this->client->request(Request::METHOD_GET, '/login');
         $form = $crawler->filter('form[action="/login"]')->form([
             'login' => $login,
             'password' => self::PASSWORD,
@@ -164,6 +167,7 @@ final class AdminArticleTest extends WebTestCase
             $passwordHasher->hash(self::PASSWORD),
             $role,
         ));
+        self::getContainer()->get(UnitOfWork::class)->commit();
     }
 
     private function clearDatabase(): void

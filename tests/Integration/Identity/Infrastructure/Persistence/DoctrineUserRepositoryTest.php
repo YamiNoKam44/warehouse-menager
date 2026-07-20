@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Identity\Infrastructure\Persistence;
 
-use App\Identity\Domain\Exception\UserAlreadyExists;
 use App\Identity\Domain\Model\User;
 use App\Identity\Infrastructure\Persistence\Doctrine\DoctrineUserRepository;
+use App\Shared\Application\Exception\PersistenceUniqueConstraintViolation;
+use App\Shared\Application\Port\UnitOfWork;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -37,14 +38,17 @@ final class DoctrineUserRepositoryTest extends KernelTestCase
         parent::tearDown();
     }
 
-    public function testItTranslatesDuplicateLoginConstraint(): void
+    public function testUnitOfWorkTranslatesDuplicateLoginConstraint(): void
     {
         $repository = self::getContainer()->get(DoctrineUserRepository::class);
+        $unitOfWork = self::getContainer()->get(UnitOfWork::class);
         $repository->save(User::register('operator', 'first-hash'));
+        $unitOfWork->commit();
 
-        $this->expectException(UserAlreadyExists::class);
+        $this->expectException(PersistenceUniqueConstraintViolation::class);
 
         $repository->save(User::register('operator', 'second-hash'));
+        $unitOfWork->commit();
     }
 }
 

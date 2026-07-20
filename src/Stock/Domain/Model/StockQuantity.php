@@ -30,7 +30,7 @@ final readonly class StockQuantity
         $integerPart = ltrim($parts[0], '0');
         $integerPart = '' === $integerPart ? '0' : $integerPart;
         $fractionPart = str_pad($parts[1] ?? '', self::SCALE, '0');
-        $value = $integerPart.'.'.$fractionPart;
+        $value = sprintf('%s.%s', $integerPart, $fractionPart);
 
         if (self::ZERO === $value) {
             throw InvalidStockQuantity::create();

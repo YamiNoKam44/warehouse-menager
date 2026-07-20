@@ -65,7 +65,7 @@ final class ReceiptDocument
         if (
             self::STORED_NAME_MAX_LENGTH < strlen($storedName)
             || 1 !== preg_match(self::STORED_NAME_PATTERN, $storedName)
-            || !str_ends_with($storedName, '.'.$type->value)
+            || !str_ends_with($storedName, sprintf('.%s', $type->value))
         ) {
             throw InvalidStockReceiptData::becauseOfStoredDocumentName();
         }

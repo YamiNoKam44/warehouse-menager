@@ -49,11 +49,10 @@ final class User
         $normalized = strtolower(trim($login));
         $length = strlen($normalized);
 
-        if (
-            self::LOGIN_MIN_LENGTH > $length
+        if (self::LOGIN_MIN_LENGTH > $length
             || self::LOGIN_MAX_LENGTH < $length
-            || 1 !== preg_match(self::LOGIN_PATTERN, $normalized)
-        ) {
+            || 1 !== preg_match(self::LOGIN_PATTERN, $normalized))
+        {
             throw InvalidLogin::fromString($login);
         }
 

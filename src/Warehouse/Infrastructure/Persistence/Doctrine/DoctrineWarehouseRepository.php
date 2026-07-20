@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Warehouse\Infrastructure\Persistence\Doctrine;
 
-use App\Warehouse\Domain\Exception\WarehouseInUse;
+use App\Identity\Domain\Model\User;
 use App\Warehouse\Domain\Model\Warehouse;
 use App\Warehouse\Domain\Repository\WarehouseRepository;
-use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class DoctrineWarehouseRepository implements WarehouseRepository
@@ -18,23 +17,18 @@ final readonly class DoctrineWarehouseRepository implements WarehouseRepository
 
     public function all(): iterable
     {
-        $query = $this->entityManager
+        return $this->entityManager
             ->createQueryBuilder()
             ->select('warehouse')
             ->from(Warehouse::class, 'warehouse')
             ->orderBy('warehouse.name', 'ASC')
-            ->getQuery();
-
-        foreach ($query->toIterable() as $warehouse) {
-            if ($warehouse instanceof Warehouse) {
-                yield $warehouse;
-            }
-        }
+            ->getQuery()
+            ->toIterable();
     }
 
     public function assignedToUser(int $userId): iterable
     {
-        $query = $this->entityManager
+        return $this->entityManager
             ->createQueryBuilder()
             ->select('warehouse')
             ->from(Warehouse::class, 'warehouse')
@@ -42,13 +36,43 @@ final readonly class DoctrineWarehouseRepository implements WarehouseRepository
             ->where('assignedUser.id = :userId')
             ->setParameter('userId', $userId)
             ->orderBy('warehouse.name', 'ASC')
-            ->getQuery();
+            ->getQuery()
+            ->getResult();
+    }
 
-        foreach ($query->getResult() as $warehouse) {
-            if ($warehouse instanceof Warehouse) {
-                yield $warehouse;
-            }
+    public function isUserAssignedTo(Warehouse $warehouse, User $user): bool
+    {
+        $assignmentCount = $this->entityManager
+            ->createQueryBuilder()
+            ->select('COUNT(warehouse.id)')
+            ->from(Warehouse::class, 'warehouse')
+            ->where('warehouse = :warehouse')
+            ->andWhere(':user MEMBER OF warehouse.users')
+            ->setParameter('warehouse', $warehouse)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return 0 < (int) $assignmentCount;
+    }
+
+    public function findByIds(iterable $ids): iterable
+    {
+        $identifiers = $this->identifierList($ids);
+
+        if ([] === $identifiers) {
+            return new \EmptyIterator();
         }
+
+        return $this->entityManager
+            ->createQueryBuilder()
+            ->select('warehouse', 'warehouseUser')
+            ->from(Warehouse::class, 'warehouse')
+            ->leftJoin('warehouse.users', 'warehouseUser')
+            ->where('warehouse.id IN (:ids)')
+            ->setParameter('ids', $identifiers)
+            ->getQuery()
+            ->getResult();
     }
 
     public function find(int $id): ?Warehouse
@@ -61,16 +85,26 @@ final readonly class DoctrineWarehouseRepository implements WarehouseRepository
     public function save(Warehouse $warehouse): void
     {
         $this->entityManager->persist($warehouse);
-        $this->entityManager->flush();
     }
 
     public function remove(Warehouse $warehouse): void
     {
-        try {
-            $this->entityManager->remove($warehouse);
-            $this->entityManager->flush();
-        } catch (ForeignKeyConstraintViolationException $exception) {
-            throw WarehouseInUse::create($exception);
+        $this->entityManager->remove($warehouse);
+    }
+
+    /**
+     * @param iterable<int> $ids
+     *
+     * @return list<int>
+     */
+    private function identifierList(iterable $ids): array
+    {
+        $identifiers = [];
+
+        foreach ($ids as $id) {
+            $identifiers[] = $id;
         }
+
+        return $identifiers;
     }
 }

@@ -10,6 +10,8 @@ use App\Article\Application\Service\ArticleService;
 use App\Article\Domain\Exception\ArticleInUse;
 use App\Article\Domain\Exception\InvalidArticleData;
 use App\Article\Domain\Repository\ArticleRepository;
+use App\Article\Infrastructure\Http\Dto\ArticleFormViewData;
+use App\Article\Infrastructure\Http\Dto\ArticleIndexViewData;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,21 +34,28 @@ final readonly class AdminArticleController
     ) {
     }
 
-    #[Route('/admin/articles', name: 'admin_article_index', methods: ['GET'])]
+    #[Route('/admin/articles', name: 'admin_article_index', methods: [Request::METHOD_GET])]
     public function index(): Response
     {
-        return new Response($this->twig->render('article/admin/index.html.twig', [
-            'articles' => $this->articles->all(),
-        ]));
+        $viewData = new ArticleIndexViewData($this->articles->all());
+
+        return new Response($this->twig->render(
+            'article/admin/index.html.twig',
+            $viewData->toArray(),
+        ));
     }
 
-    #[Route('/admin/articles/create', name: 'admin_article_create', methods: ['GET', 'POST'])]
+    #[Route(
+        '/admin/articles/create',
+        name: 'admin_article_create',
+        methods: [Request::METHOD_GET, Request::METHOD_POST],
+    )]
     public function create(Request $request): Response
     {
         $data = new ArticleData('', '');
         $error = null;
 
-        if ($request->isMethod('POST')) {
+        if ($request->isMethod(Request::METHOD_POST)) {
             $this->assertCsrfToken($request, 'article_create');
             $data = $this->dataFromRequest($request);
 
@@ -72,14 +81,14 @@ final readonly class AdminArticleController
         '/admin/articles/{id}/edit',
         name: 'admin_article_edit',
         requirements: ['id' => '\d+'],
-        methods: ['GET', 'POST'],
+        methods: [Request::METHOD_GET, Request::METHOD_POST],
     )]
     public function edit(int $id, Request $request): Response
     {
         $error = null;
 
-        if ($request->isMethod('POST')) {
-            $this->assertCsrfToken($request, 'article_edit_'.$id);
+        if ($request->isMethod(Request::METHOD_POST)) {
+            $this->assertCsrfToken($request, sprintf('article_edit_%d', $id));
             $data = $this->dataFromRequest($request);
 
             try {
@@ -104,7 +113,7 @@ final readonly class AdminArticleController
         return $this->renderForm(
             'Edycja artykułu',
             'Zapisz zmiany',
-            'article_edit_'.$id,
+            sprintf('article_edit_%d', $id),
             $data,
             $error,
         );
@@ -114,11 +123,11 @@ final readonly class AdminArticleController
         '/admin/articles/{id}/delete',
         name: 'admin_article_delete',
         requirements: ['id' => '\\d+'],
-        methods: ['POST'],
+        methods: [Request::METHOD_POST],
     )]
     public function delete(int $id, Request $request): Response
     {
-        $this->assertCsrfToken($request, 'article_delete_'.$id);
+        $this->assertCsrfToken($request, sprintf('article_delete_%d', $id));
 
         try {
             $this->articleService->delete($id);
@@ -155,13 +164,18 @@ final readonly class AdminArticleController
         ArticleData $data,
         ?string $error,
     ): Response {
-        return new Response($this->twig->render('article/admin/form.html.twig', [
-            'heading' => $heading,
-            'submit_label' => $submitLabel,
-            'csrf_token_id' => $csrfTokenId,
-            'data' => $data,
-            'error' => $error,
-        ]));
+        $viewData = new ArticleFormViewData(
+            $heading,
+            $submitLabel,
+            $csrfTokenId,
+            $data,
+            $error,
+        );
+
+        return new Response($this->twig->render(
+            'article/admin/form.html.twig',
+            $viewData->toArray(),
+        ));
     }
 
     private function redirectToIndex(): RedirectResponse

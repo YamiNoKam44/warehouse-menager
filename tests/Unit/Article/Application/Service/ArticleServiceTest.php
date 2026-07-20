@@ -9,6 +9,7 @@ use App\Article\Application\Dto\ArticleData;
 use App\Article\Application\Exception\ArticleNotFound;
 use App\Article\Domain\Model\Article;
 use App\Article\Domain\Repository\ArticleRepository;
+use App\Tests\Support\InMemoryUnitOfWork;
 use PHPUnit\Framework\TestCase;
 
 final class ArticleServiceTest extends TestCase
@@ -23,7 +24,7 @@ final class ArticleServiceTest extends TestCase
                 && 'szt.' === $article->unitOfMeasure()
             ));
 
-        $article = (new ArticleService($repository))->create(
+        $article = (new ArticleService($repository, new InMemoryUnitOfWork()))->create(
             new ArticleData('Taśma pakowa', 'szt.'),
         );
 
@@ -37,7 +38,7 @@ final class ArticleServiceTest extends TestCase
         $repository->expects(self::once())->method('find')->with(8)->willReturn($article);
         $repository->expects(self::once())->method('save')->with($article);
 
-        (new ArticleService($repository))->update(
+        (new ArticleService($repository, new InMemoryUnitOfWork()))->update(
             8,
             new ArticleData('Taśma wzmacniana', 'rolka'),
         );
@@ -54,7 +55,7 @@ final class ArticleServiceTest extends TestCase
 
         $this->expectException(ArticleNotFound::class);
 
-        (new ArticleService($repository))->update(
+        (new ArticleService($repository, new InMemoryUnitOfWork()))->update(
             99,
             new ArticleData('Taśma', 'szt.'),
         );
@@ -67,7 +68,7 @@ final class ArticleServiceTest extends TestCase
         $repository->expects(self::once())->method('find')->with(11)->willReturn($article);
         $repository->expects(self::once())->method('remove')->with($article);
 
-        (new ArticleService($repository))->delete(11);
+        (new ArticleService($repository, new InMemoryUnitOfWork()))->delete(11);
     }
 
     public function testItCannotDeleteMissingArticle(): void
@@ -78,6 +79,6 @@ final class ArticleServiceTest extends TestCase
 
         $this->expectException(ArticleNotFound::class);
 
-        (new ArticleService($repository))->delete(99);
+        (new ArticleService($repository, new InMemoryUnitOfWork()))->delete(99);
     }
 }

@@ -17,6 +17,5 @@ final readonly class DoctrineStockReceiptRepository implements StockReceiptRepos
     public function save(StockReceipt $receipt): void
     {
         $this->entityManager->persist($receipt);
-        $this->entityManager->flush();
     }
 }

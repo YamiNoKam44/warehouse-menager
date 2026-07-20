@@ -29,7 +29,11 @@ final readonly class LocalReceiptDocumentStorage implements ReceiptDocumentStora
 
         try {
             do {
-                $storedName = bin2hex(random_bytes(self::RANDOM_NAME_BYTES)).'.'.$upload->type->value;
+                $storedName = sprintf(
+                    '%s.%s',
+                    bin2hex(random_bytes(self::RANDOM_NAME_BYTES)),
+                    $upload->type->value,
+                );
                 $targetPath = $this->targetPath($storedName);
             } while (file_exists($targetPath));
         } catch (\Throwable $exception) {
@@ -79,6 +83,11 @@ final readonly class LocalReceiptDocumentStorage implements ReceiptDocumentStora
 
     private function targetPath(string $storedName): string
     {
-        return rtrim($this->directory, '/\\').DIRECTORY_SEPARATOR.$storedName;
+        return sprintf(
+            '%s%s%s',
+            rtrim($this->directory, '/\\'),
+            DIRECTORY_SEPARATOR,
+            $storedName,
+        );
     }
 }
