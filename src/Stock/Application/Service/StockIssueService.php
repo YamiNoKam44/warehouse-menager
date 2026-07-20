@@ -11,6 +11,7 @@ use App\Identity\Application\Exception\UserNotFound;
 use App\Identity\Domain\Model\User;
 use App\Identity\Domain\Model\UserRole;
 use App\Identity\Domain\Repository\UserRepository;
+use App\Shared\Application\Port\UnitOfWork;
 use App\Stock\Application\Dto\IssueData;
 use App\Stock\Application\Exception\StockIssueAccessDenied;
 use App\Stock\Domain\Model\StockIssue;
@@ -26,6 +27,7 @@ final readonly class StockIssueService
         private WarehouseRepository $warehouses,
         private ArticleRepository $articles,
         private StockIssueRepository $issues,
+        private UnitOfWork $unitOfWork,
     ) {
     }
 
@@ -34,7 +36,7 @@ final readonly class StockIssueService
     {
         $user = $this->findUser($userId);
 
-        if (UserRole::ADMIN === $user->role()) {
+        if ($this->isAdmin($user)) {
             return $this->warehouses->all();
         }
 
@@ -50,27 +52,58 @@ final readonly class StockIssueService
     public function issue(int $userId, IssueData $data): void
     {
         $user = $this->findUser($userId);
-        $warehouse = $this->warehouses->find($data->warehouseId)
-            ?? throw WarehouseNotFound::withId($data->warehouseId);
+        $warehouse = $this->findWarehouse($data->warehouseId);
+        $this->assertWarehouseAccess($user, $warehouse);
+        $article = $this->findArticle($data->articleId);
 
-        if (UserRole::ADMIN !== $user->role() && !$warehouse->isAssignedTo($user)) {
-            throw StockIssueAccessDenied::toWarehouse();
-        }
-
-        $article = $this->articles->find($data->articleId)
-            ?? throw ArticleNotFound::withId($data->articleId);
-
-        $this->issues->save(StockIssue::create(
+        $issue = StockIssue::create(
             $warehouse,
             $article,
             $user,
             $data->quantity,
             new \DateTimeImmutable(),
-        ));
+        );
+
+        $this->issues->save($issue);
+        $this->unitOfWork->commit();
     }
 
     private function findUser(int $userId): User
     {
-        return $this->users->find($userId) ?? throw UserNotFound::withId($userId);
+        $user = $this->users->find($userId);
+
+        return $user ?? throw UserNotFound::withId($userId);
+    }
+
+    private function findWarehouse(int $warehouseId): Warehouse
+    {
+        $warehouse = $this->warehouses->find($warehouseId);
+
+        return $warehouse ?? throw WarehouseNotFound::withId($warehouseId);
+    }
+
+    private function findArticle(int $articleId): Article
+    {
+        $article = $this->articles->find($articleId);
+
+        return $article ?? throw ArticleNotFound::withId($articleId);
+    }
+
+    private function assertWarehouseAccess(User $user, Warehouse $warehouse): void
+    {
+        if ($this->isAdmin($user)) {
+            return;
+        }
+
+        $isAssigned = $this->warehouses->isUserAssignedTo($warehouse, $user);
+
+        if (!$isAssigned) {
+            throw StockIssueAccessDenied::toWarehouse();
+        }
+    }
+
+    private function isAdmin(User $user): bool
+    {
+        return UserRole::ADMIN === $user->role();
     }
 }

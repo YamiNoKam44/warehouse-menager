@@ -53,6 +53,21 @@ final class ProviderUserRepository implements UserRepository
         }
     }
 
+    public function findByIds(iterable $ids): iterable
+    {
+        if (null === $this->user) {
+            return new \EmptyIterator();
+        }
+
+        foreach ($ids as $id) {
+            if ($this->user->id() === $id) {
+                return new \ArrayIterator([$this->user]);
+            }
+        }
+
+        return new \EmptyIterator();
+    }
+
     public function find(int $id): ?User
     {
         return null !== $this->user && $this->user->id() === $id ? $this->user : null;

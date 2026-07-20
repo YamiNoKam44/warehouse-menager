@@ -14,6 +14,11 @@ final readonly class AssignedWarehouseIds implements \IteratorAggregate
     {
     }
 
+    public static function none(): self
+    {
+        return new self([]);
+    }
+
     /** @param iterable<Warehouse> $warehouses */
     public static function fromWarehouses(iterable $warehouses): self
     {
@@ -34,10 +39,24 @@ final readonly class AssignedWarehouseIds implements \IteratorAggregate
         return new self($ids);
     }
 
-
-    public function contains(int $id): bool
+    public function mergedWith(self $other): self
     {
-        return in_array($id, $this->ids, true);
+        $ids = $this->ids;
+
+        foreach ($other as $id) {
+            if (!in_array($id, $ids, true)) {
+                $ids[] = $id;
+            }
+        }
+
+        return new self($ids);
+    }
+
+    public function contains(Warehouse $warehouse): bool
+    {
+        $id = $warehouse->id();
+
+        return null !== $id && in_array($id, $this->ids, true);
     }
 
     public function getIterator(): \Traversable

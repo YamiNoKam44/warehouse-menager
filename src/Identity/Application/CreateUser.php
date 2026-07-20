@@ -6,8 +6,11 @@ namespace App\Identity\Application;
 
 use App\Identity\Application\Dto\PlainPassword;
 use App\Identity\Application\Port\PasswordHasher;
+use App\Identity\Domain\Exception\UserAlreadyExists;
 use App\Identity\Domain\Model\User;
 use App\Identity\Domain\Repository\UserRepository;
+use App\Shared\Application\Exception\PersistenceUniqueConstraintViolation;
+use App\Shared\Application\Port\UnitOfWork;
 
 final readonly class CreateUser
 {
@@ -17,6 +20,7 @@ final readonly class CreateUser
     public function __construct(
         private UserRepository $users,
         private PasswordHasher $passwordHasher,
+        private UnitOfWork $unitOfWork,
     ) {
     }
 
@@ -30,6 +34,12 @@ final readonly class CreateUser
         );
 
         $this->users->save($user);
+
+        try {
+            $this->unitOfWork->commit();
+        } catch (PersistenceUniqueConstraintViolation $exception) {
+            throw UserAlreadyExists::withLogin($user->login(), $exception);
+        }
 
         return $user;
     }

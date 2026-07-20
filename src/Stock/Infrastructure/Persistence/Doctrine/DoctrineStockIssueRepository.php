@@ -17,6 +17,5 @@ final readonly class DoctrineStockIssueRepository implements StockIssueRepositor
     public function save(StockIssue $issue): void
     {
         $this->entityManager->persist($issue);
-        $this->entityManager->flush();
     }
 }

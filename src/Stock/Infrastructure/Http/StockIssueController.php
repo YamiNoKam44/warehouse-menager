@@ -10,6 +10,7 @@ use App\Identity\Infrastructure\Security\SecurityUser;
 use App\Stock\Application\Exception\StockIssueAccessDenied;
 use App\Stock\Application\Service\StockIssueService;
 use App\Stock\Domain\Exception\InvalidStockQuantity;
+use App\Stock\Infrastructure\Http\Dto\StockOperationFormViewData;
 use App\Stock\Infrastructure\Http\Form\StockIssueFormData;
 use App\Stock\Infrastructure\Http\Form\StockIssueType;
 use App\Warehouse\Application\Exception\WarehouseNotFound;
@@ -35,7 +36,11 @@ final readonly class StockIssueController
     ) {
     }
 
-    #[Route('/stock/issues/create', name: 'app_stock_issue_create', methods: ['GET', 'POST'])]
+    #[Route(
+        '/stock/issues/create',
+        name: 'app_stock_issue_create',
+        methods: [Request::METHOD_GET, Request::METHOD_POST],
+    )]
     public function __invoke(Request $request): Response
     {
         $user = $this->security->getUser();
@@ -53,7 +58,7 @@ final readonly class StockIssueController
         $data = new StockIssueFormData();
         $form = $this->forms->create(StockIssueType::class, $data, [
             'action' => $this->urls->generate('app_stock_issue_create'),
-            'method' => 'POST',
+            'method' => Request::METHOD_POST,
             'warehouses' => $warehouses,
             'articles' => $this->issueService->availableArticles(),
         ]);
@@ -78,9 +83,14 @@ final readonly class StockIssueController
             }
         }
 
-        return new Response($this->twig->render('stock/issue/create.html.twig', [
-            'form' => $form->createView(),
-            'saved' => $request->query->getBoolean('saved'),
-        ]));
+        $viewData = new StockOperationFormViewData(
+            $form->createView(),
+            $request->query->getBoolean('saved'),
+        );
+
+        return new Response($this->twig->render(
+            'stock/issue/create.html.twig',
+            $viewData->toArray(),
+        ));
     }
 }

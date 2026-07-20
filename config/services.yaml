@@ -15,6 +15,12 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
+    App\Shared\Infrastructure\:
+        resource: '../src/Shared/Infrastructure/'
+
+    App\Shared\Application\Port\UnitOfWork:
+        alias: App\Shared\Infrastructure\Persistence\Doctrine\DoctrineUnitOfWork
+
     App\Identity\Application\:
         resource: '../src/Identity/Application/'
         exclude:

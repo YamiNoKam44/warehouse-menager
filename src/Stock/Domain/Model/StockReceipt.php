@@ -169,6 +169,6 @@ final class StockReceipt
         $fractionPart = $parts[1] ?? '';
         $fractionPart = str_pad($fractionPart, $scale, '0');
 
-        return $integerPart.'.'.$fractionPart;
+        return sprintf('%s.%s', $integerPart, $fractionPart);
     }
 }

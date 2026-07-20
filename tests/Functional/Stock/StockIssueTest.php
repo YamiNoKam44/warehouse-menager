@@ -10,6 +10,7 @@ use App\Identity\Application\Port\PasswordHasher;
 use App\Identity\Domain\Model\User;
 use App\Identity\Domain\Model\UserRole;
 use App\Identity\Domain\Repository\UserRepository;
+use App\Shared\Application\Port\UnitOfWork;
 use App\Stock\Application\Dto\IssueData;
 use App\Stock\Application\Exception\StockIssueAccessDenied;
 use App\Stock\Application\Service\StockIssueService;
@@ -18,6 +19,7 @@ use App\Warehouse\Domain\Repository\WarehouseRepository;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 final class StockIssueTest extends WebTestCase
@@ -48,6 +50,7 @@ final class StockIssueTest extends WebTestCase
         $articles = self::getContainer()->get(ArticleRepository::class);
         $this->article = Article::create('Cement', 'kg');
         $articles->save($this->article);
+        self::getContainer()->get(UnitOfWork::class)->commit();
     }
 
     protected function tearDown(): void
@@ -61,11 +64,11 @@ final class StockIssueTest extends WebTestCase
     {
         $this->logIn('operator');
 
-        $crawler = $this->client->request('GET', self::ISSUE_URL);
+        $crawler = $this->client->request(Request::METHOD_GET, self::ISSUE_URL);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(
-            '.sidebar__link[aria-current="page"][href="'.self::ISSUE_URL.'"]',
+            sprintf('.sidebar__link[aria-current="page"][href="%s"]', self::ISSUE_URL),
         );
         self::assertSelectorExists(sprintf(
             '#stock_issue_warehouse option[value="%d"]',
@@ -80,7 +83,7 @@ final class StockIssueTest extends WebTestCase
             'Cement — jednostka: kg',
         );
 
-        $this->client->request('POST', self::ISSUE_URL, [
+        $this->client->request(Request::METHOD_POST, self::ISSUE_URL, [
             'stock_issue' => [
                 'warehouse' => (string) $this->assignedWarehouse->id(),
                 'article' => (string) $this->article->id(),
@@ -90,7 +93,7 @@ final class StockIssueTest extends WebTestCase
         ]);
 
         self::assertResponseStatusCodeSame(Response::HTTP_SEE_OTHER);
-        self::assertResponseRedirects(self::ISSUE_URL.'?saved=1');
+        self::assertResponseRedirects(sprintf('%s?saved=1', self::ISSUE_URL));
 
         $this->client->followRedirect();
         self::assertSelectorTextContains('.notice', 'Wydanie towaru zostało zapisane.');
@@ -108,9 +111,9 @@ final class StockIssueTest extends WebTestCase
     {
         $this->logIn('operator');
 
-        $crawler = $this->client->request('GET', self::ISSUE_URL);
+        $crawler = $this->client->request(Request::METHOD_GET, self::ISSUE_URL);
 
-        $this->client->request('POST', self::ISSUE_URL, [
+        $this->client->request(Request::METHOD_POST, self::ISSUE_URL, [
             'stock_issue' => [
                 'warehouse' => (string) $this->assignedWarehouse->id(),
                 'article' => (string) $this->article->id(),
@@ -152,7 +155,7 @@ final class StockIssueTest extends WebTestCase
     {
         $this->logIn('admin');
 
-        $this->client->request('GET', self::ISSUE_URL);
+        $this->client->request(Request::METHOD_GET, self::ISSUE_URL);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(sprintf(
@@ -167,7 +170,7 @@ final class StockIssueTest extends WebTestCase
 
     private function logIn(string $login): void
     {
-        $crawler = $this->client->request('GET', '/login');
+        $crawler = $this->client->request(Request::METHOD_GET, '/login');
         $form = $crawler->filter('form[action="/login"]')->form([
             'login' => $login,
             'password' => self::PASSWORD,
@@ -184,6 +187,7 @@ final class StockIssueTest extends WebTestCase
         $users = self::getContainer()->get(UserRepository::class);
         $user = User::register($login, $passwordHasher->hash(self::PASSWORD), $role);
         $users->save($user);
+        self::getContainer()->get(UnitOfWork::class)->commit();
 
         return $user;
     }

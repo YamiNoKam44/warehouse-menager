@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Article\Infrastructure\Persistence\Doctrine;
 
-use App\Article\Domain\Exception\ArticleInUse;
 use App\Article\Domain\Model\Article;
 use App\Article\Domain\Repository\ArticleRepository;
-use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class DoctrineArticleRepository implements ArticleRepository
@@ -18,18 +16,13 @@ final readonly class DoctrineArticleRepository implements ArticleRepository
 
     public function all(): iterable
     {
-        $query = $this->entityManager
+        return $this->entityManager
             ->createQueryBuilder()
             ->select('article')
             ->from(Article::class, 'article')
             ->orderBy('article.name', 'ASC')
-            ->getQuery();
-
-        foreach ($query->toIterable() as $article) {
-            if ($article instanceof Article) {
-                yield $article;
-            }
-        }
+            ->getQuery()
+            ->toIterable();
     }
 
     public function find(int $id): ?Article
@@ -42,16 +35,10 @@ final readonly class DoctrineArticleRepository implements ArticleRepository
     public function save(Article $article): void
     {
         $this->entityManager->persist($article);
-        $this->entityManager->flush();
     }
 
     public function remove(Article $article): void
     {
-        try {
-            $this->entityManager->remove($article);
-            $this->entityManager->flush();
-        } catch (ForeignKeyConstraintViolationException $exception) {
-            throw ArticleInUse::create($exception);
-        }
+        $this->entityManager->remove($article);
     }
 }

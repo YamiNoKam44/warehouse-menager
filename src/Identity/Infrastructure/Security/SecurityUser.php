@@ -33,7 +33,6 @@ final readonly class SecurityUser implements UserInterface, PasswordAuthenticate
      */
     public function getRoles(): array
     {
-        // UserInterface wymaga tablicy; domena przechowuje kontrolowany enum UserRole.
         return [$this->role->value];
     }
 

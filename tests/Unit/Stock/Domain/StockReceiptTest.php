@@ -45,7 +45,7 @@ final class StockReceiptTest extends TestCase
 
         for ($number = 1; $number <= StockReceipt::MAX_DOCUMENTS; ++$number) {
             $receipt->attachDocument(
-                str_repeat((string) $number, 32).'.pdf',
+                sprintf('%s.pdf', str_repeat((string) $number, 32)),
                 sprintf('faktura-%d.pdf', $number),
                 ReceiptDocumentType::PDF,
             );
@@ -56,7 +56,7 @@ final class StockReceiptTest extends TestCase
         $this->expectException(InvalidStockReceiptData::class);
 
         $receipt->attachDocument(
-            str_repeat('a', 32).'.xml',
+            sprintf('%s.xml', str_repeat('a', 32)),
             'faktura.xml',
             ReceiptDocumentType::XML,
         );

@@ -107,6 +107,25 @@ docker compose exec php-fpm php bin/console lint:container
 docker compose exec php-fpm php bin/console doctrine:schema:validate
 ```
 
+## GitHub Actions
+
+Workflow `.github/workflows/ci.yml` uruchamia się dla pull requestów, zmian na
+gałęzi `main`, kolejki merge oraz ręcznie. Wykonuje dwa niezależne sprawdzenia:
+
+- `Tests` instaluje zależności, sprawdza je przez `composer audit`, wykonuje
+  migracje na testowym MySQL, waliduje konfigurację i uruchamia PHPUnit,
+- `OWASP Top 10` analizuje kod przez Semgrep z regułami OWASP.
+
+Żeby nie można było scalić pull requesta z pominięciem tych kontroli, w GitHubie
+wejdź w `Settings` → `Rules` → `Rulesets`, utwórz regułę dla `main` i włącz
+`Require status checks to pass`. Jako wymagane statusy wybierz `Tests` oraz
+`OWASP Top 10`. Statusy pojawią się na liście po pierwszym wykonaniu workflow.
+
+Automatyczny skan pomaga znaleźć typowe podatności, ale nie zastępuje przeglądu
+uprawnień, logiki biznesowej ani testów bezpieczeństwa uruchomionej aplikacji.
+Deployment nie jest skonfigurowany, ponieważ projekt nie ma jeszcze wskazanego
+środowiska docelowego.
+
 ## Układ kodu
 
 Kod jest podzielony według obszarów: `Identity`, `Article`, `Warehouse` i `Stock`.

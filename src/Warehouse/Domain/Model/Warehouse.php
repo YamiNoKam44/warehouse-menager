@@ -79,13 +79,8 @@ final class Warehouse
 
     public function isAssignedTo(User $user): bool
     {
-        foreach ($this->users as $assignedUser) {
-            if (self::isSameUser($assignedUser, $user)) {
-                return true;
-            }
-        }
+        return array_any($this->users, static fn($assignedUser) => self::isSameUser($assignedUser, $user));
 
-        return false;
     }
 
     /**

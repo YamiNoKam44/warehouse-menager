@@ -12,6 +12,7 @@ use App\Stock\Application\Exception\StockReceiptAccessDenied;
 use App\Stock\Application\Service\StockReceiptService;
 use App\Stock\Domain\Exception\InvalidStockQuantity;
 use App\Stock\Domain\Exception\InvalidStockReceiptData;
+use App\Stock\Infrastructure\Http\Dto\StockOperationFormViewData;
 use App\Stock\Infrastructure\Http\Form\StockReceiptFormData;
 use App\Stock\Infrastructure\Http\Form\StockReceiptType;
 use App\Warehouse\Application\Exception\WarehouseNotFound;
@@ -37,7 +38,11 @@ final readonly class StockReceiptController
     ) {
     }
 
-    #[Route('/stock/receipts/create', name: 'app_stock_receipt_create', methods: ['GET', 'POST'])]
+    #[Route(
+        '/stock/receipts/create',
+        name: 'app_stock_receipt_create',
+        methods: [Request::METHOD_GET, Request::METHOD_POST],
+    )]
     public function __invoke(Request $request): Response
     {
         $user = $this->security->getUser();
@@ -55,7 +60,7 @@ final readonly class StockReceiptController
         $data = new StockReceiptFormData();
         $form = $this->forms->create(StockReceiptType::class, $data, [
             'action' => $this->urls->generate('app_stock_receipt_create'),
-            'method' => 'POST',
+            'method' => Request::METHOD_POST,
             'warehouses' => $warehouses,
             'articles' => $this->receiptService->availableArticles(),
         ]);
@@ -82,9 +87,14 @@ final readonly class StockReceiptController
             }
         }
 
-        return new Response($this->twig->render('stock/receipt/create.html.twig', [
-            'form' => $form->createView(),
-            'saved' => $request->query->getBoolean('saved'),
-        ]));
+        $viewData = new StockOperationFormViewData(
+            $form->createView(),
+            $request->query->getBoolean('saved'),
+        );
+
+        return new Response($this->twig->render(
+            'stock/receipt/create.html.twig',
+            $viewData->toArray(),
+        ));
     }
 }

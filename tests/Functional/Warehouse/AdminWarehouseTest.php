@@ -10,6 +10,7 @@ use App\Identity\Application\Port\PasswordHasher;
 use App\Identity\Domain\Model\User;
 use App\Identity\Domain\Model\UserRole;
 use App\Identity\Domain\Repository\UserRepository;
+use App\Shared\Application\Port\UnitOfWork;
 use App\Stock\Domain\Model\StockIssue;
 use App\Stock\Domain\Repository\StockIssueRepository;
 use App\Warehouse\Domain\Model\Warehouse;
@@ -17,6 +18,7 @@ use App\Warehouse\Domain\Repository\WarehouseRepository;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 final class AdminWarehouseTest extends WebTestCase
@@ -49,22 +51,22 @@ final class AdminWarehouseTest extends WebTestCase
     {
         $this->logIn('operator');
 
-        $this->client->request('GET', '/admin/warehouses');
+        $this->client->request(Request::METHOD_GET, '/admin/warehouses');
         self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
 
-        $this->client->request('GET', self::AUTOCOMPLETE_URL);
+        $this->client->request(Request::METHOD_GET, self::AUTOCOMPLETE_URL);
         self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
     public function testAdministratorCanCreateEditAndDeleteWarehouse(): void
     {
         for ($number = 1; $number <= 4; ++$number) {
-            $this->createUser('uzytkownik'.$number, UserRole::USER);
+            $this->createUser(sprintf('uzytkownik%d', $number), UserRole::USER);
         }
 
         $this->logIn('admin');
 
-        $crawler = $this->client->request('GET', '/admin/warehouses/create');
+        $crawler = $this->client->request(Request::METHOD_GET, '/admin/warehouses/create');
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(
             '#warehouse_assignedUsers[data-controller~="symfony--ux-autocomplete--autocomplete"]',
@@ -73,14 +75,17 @@ final class AdminWarehouseTest extends WebTestCase
             '#warehouse_assignedUsers[data-symfony--ux-autocomplete--autocomplete-max-results-value="5"]',
         );
         self::assertSelectorExists(
-            '#warehouse_assignedUsers[data-symfony--ux-autocomplete--autocomplete-url-value="'.self::AUTOCOMPLETE_URL.'"]',
+            sprintf(
+                '#warehouse_assignedUsers[data-symfony--ux-autocomplete--autocomplete-url-value="%s"]',
+                self::AUTOCOMPLETE_URL,
+            ),
         );
         self::assertSelectorCount(0, '#warehouse_assignedUsers option');
         self::assertSelectorNotExists('script[src="/scripts/warehouse-user-select.js"]');
 
         $csrfToken = $crawler->filter('input[name="warehouse[_token]"]')->attr('value');
 
-        $this->client->request('GET', self::AUTOCOMPLETE_URL);
+        $this->client->request(Request::METHOD_GET, self::AUTOCOMPLETE_URL);
         self::assertResponseIsSuccessful();
 
         $autocompleteData = json_decode(
@@ -90,7 +95,7 @@ final class AdminWarehouseTest extends WebTestCase
         );
         self::assertCount(5, $autocompleteData['results']);
 
-        $this->client->request('POST', '/admin/warehouses/create', [
+        $this->client->request(Request::METHOD_POST, '/admin/warehouses/create', [
             'warehouse' => [
                 'name' => '  Magazyn   główny  ',
                 'assignedUsers' => [(string) $this->operator->id()],
@@ -115,13 +120,13 @@ final class AdminWarehouseTest extends WebTestCase
             [$warehouseId, $this->operator->id()],
         ));
 
-        $crawler = $this->client->request('GET', sprintf('/admin/warehouses/%d/edit', $warehouseId));
+        $crawler = $this->client->request(Request::METHOD_GET, sprintf('/admin/warehouses/%d/edit', $warehouseId));
         self::assertSelectorExists(sprintf(
             '#warehouse_assignedUsers option[value="%d"][selected]',
             $this->operator->id(),
         ));
 
-        $this->client->request('POST', sprintf('/admin/warehouses/%d/edit', $warehouseId), [
+        $this->client->request(Request::METHOD_POST, sprintf('/admin/warehouses/%d/edit', $warehouseId), [
             'warehouse' => [
                 'name' => 'Magazyn pomocniczy',
                 'assignedUsers' => [(string) $this->magazynier->id()],
@@ -169,8 +174,9 @@ final class AdminWarehouseTest extends WebTestCase
             '1',
             new \DateTimeImmutable(),
         ));
+        self::getContainer()->get(UnitOfWork::class)->commit();
 
-        $crawler = $this->client->request('GET', '/admin/warehouses');
+        $crawler = $this->client->request(Request::METHOD_GET, '/admin/warehouses');
         $deleteForm = $crawler
             ->filter(sprintf('form[action="/admin/warehouses/%d/delete"]', $warehouse->id()))
             ->form();
@@ -188,7 +194,7 @@ final class AdminWarehouseTest extends WebTestCase
 
     private function logIn(string $login): void
     {
-        $crawler = $this->client->request('GET', '/login');
+        $crawler = $this->client->request(Request::METHOD_GET, '/login');
         $form = $crawler->filter('form[action="/login"]')->form([
             'login' => $login,
             'password' => self::PASSWORD,
@@ -205,6 +211,7 @@ final class AdminWarehouseTest extends WebTestCase
         $users = self::getContainer()->get(UserRepository::class);
         $user = User::register($login, $passwordHasher->hash(self::PASSWORD), $role);
         $users->save($user);
+        self::getContainer()->get(UnitOfWork::class)->commit();
 
         return $user;
     }
