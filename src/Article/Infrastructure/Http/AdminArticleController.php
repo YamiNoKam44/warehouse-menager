@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Article\Infrastructure\Http;
 
-use App\Article\Application\ArticleService;
 use App\Article\Application\Dto\ArticleData;
 use App\Article\Application\Exception\ArticleNotFound;
+use App\Article\Application\Service\ArticleService;
+use App\Article\Domain\Exception\ArticleInUse;
 use App\Article\Domain\Exception\InvalidArticleData;
 use App\Article\Domain\Repository\ArticleRepository;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -121,6 +122,8 @@ final readonly class AdminArticleController
 
         try {
             $this->articleService->delete($id);
+        } catch (ArticleInUse $exception) {
+            $request->getSession()->getFlashBag()->add('error', $exception->getMessage());
         } catch (ArticleNotFound $exception) {
             throw new NotFoundHttpException($exception->getMessage(), $exception);
         }

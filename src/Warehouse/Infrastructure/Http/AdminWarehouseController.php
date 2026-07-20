@@ -7,6 +7,7 @@ namespace App\Warehouse\Infrastructure\Http;
 use App\Warehouse\Application\Exception\WarehouseNotFound;
 use App\Warehouse\Application\Service\WarehouseService;
 use App\Warehouse\Domain\Exception\InvalidWarehouseData;
+use App\Warehouse\Domain\Exception\WarehouseInUse;
 use App\Warehouse\Domain\Repository\WarehouseRepository;
 use App\Warehouse\Infrastructure\Http\Form\WarehouseFormData;
 use App\Warehouse\Infrastructure\Http\Form\WarehouseType;
@@ -24,9 +25,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Twig\Environment;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
 
 final readonly class AdminWarehouseController
 {
@@ -40,11 +38,6 @@ final readonly class AdminWarehouseController
     ) {
     }
 
-    /**
-     * @throws RuntimeError
-     * @throws SyntaxError
-     * @throws LoaderError
-     */
     #[Route('/admin/warehouses', name: 'admin_warehouse_index', methods: ['GET'])]
     public function index(): Response
     {
@@ -122,6 +115,8 @@ final readonly class AdminWarehouseController
 
         try {
             $this->warehouseService->delete($id);
+        } catch (WarehouseInUse $exception) {
+            $request->getSession()->getFlashBag()->add('error', $exception->getMessage());
         } catch (WarehouseNotFound $exception) {
             throw new NotFoundHttpException($exception->getMessage(), $exception);
         }
@@ -162,11 +157,6 @@ final readonly class AdminWarehouseController
         }
     }
 
-    /**
-     * @throws RuntimeError
-     * @throws SyntaxError
-     * @throws LoaderError
-     */
     private function renderForm(
         string $heading,
         string $submitLabel,

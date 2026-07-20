@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Wydanie towaru | Warehouse Manager{% endblock %}
+
+{% block body %}
+<header class="content-header">
+    <div>
+        <p class="eyebrow">Magazyn</p>
+        <h1>Wydanie towaru</h1>
+        <p class="muted">Zarejestruj wydanie artykułu z wybranego magazynu.</p>
+    </div>
+</header>
+
+<section class="content-panel content-panel--form" aria-labelledby="stock-issue-form-heading">
+    <h2 id="stock-issue-form-heading" class="visually-hidden">Dane wydania</h2>
+
+    {% if saved %}
+        <div class="notice" role="status">
+            Wydanie towaru zostało zapisane.
+        </div>
+    {% endif %}
+
+    {{ form_start(form, {attr: {class: 'stock-issue-form'}}) }}
+        {% set root_errors = form_errors(form) %}
+        {% if root_errors|striptags|trim is not empty %}
+            <div class="alert" role="alert">
+                {{ root_errors|raw }}
+            </div>
+        {% endif %}
+
+        <div class="form-field">
+            {{ form_label(form.warehouse) }}
+            {{ form_widget(form.warehouse) }}
+            {{ form_errors(form.warehouse) }}
+        </div>
+
+        <div class="form-field">
+            {{ form_label(form.article) }}
+            {{ form_widget(form.article) }}
+            {{ form_help(form.article) }}
+            {{ form_errors(form.article) }}
+        </div>
+
+        <div class="form-field">
+            {{ form_label(form.quantity) }}
+            {{ form_widget(form.quantity) }}
+            {{ form_help(form.quantity) }}
+            {{ form_errors(form.quantity) }}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">Wydaj towar</button>
+        </div>
+    {{ form_end(form) }}
+</section>
+{% endblock %}

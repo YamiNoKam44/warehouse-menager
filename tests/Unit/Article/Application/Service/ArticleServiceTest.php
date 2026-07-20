@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Article\Application;
+namespace App\Tests\Unit\Article\Application\Service;
 
-use App\Article\Application\ArticleService;
+use App\Article\Application\Service\ArticleService;
 use App\Article\Application\Dto\ArticleData;
 use App\Article\Application\Exception\ArticleNotFound;
 use App\Article\Domain\Model\Article;

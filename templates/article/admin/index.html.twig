@@ -15,6 +15,10 @@
     </a>
 </header>
 
+{% for message in app.flashes('error') %}
+    <div class="alert" role="alert">{{ message }}</div>
+{% endfor %}
+
 <section class="content-panel" aria-labelledby="article-list-heading">
     <h2 id="article-list-heading" class="visually-hidden">Lista artykułów</h2>
 

@@ -21,19 +21,22 @@
                     </a>
                 </li>
                 <li>
-                    <span class="sidebar__link sidebar__link--disabled">
+                    <a
+                        class="sidebar__link"
+                        href="{{ path('app_stock_receipt_create') }}"
+                        {% if currentRoute starts with 'app_stock_receipt_' %}aria-current="page"{% endif %}
+                    >
                         Przyjęcie towaru
-                    </span>
+                    </a>
                 </li>
                 <li>
-                    <span class="sidebar__link sidebar__link--disabled">
+                    <a
+                        class="sidebar__link"
+                        href="{{ path('app_stock_issue_create') }}"
+                        {% if currentRoute starts with 'app_stock_issue_' %}aria-current="page"{% endif %}
+                    >
                         Wydanie towaru
-                    </span>
-                </li>
-                <li>
-                    <span class="sidebar__link sidebar__link--disabled">
-                        Historia operacji
-                    </span>
+                    </a>
                 </li>
             </ul>
         </section>

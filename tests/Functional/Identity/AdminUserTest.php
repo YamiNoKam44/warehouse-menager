@@ -211,6 +211,9 @@ final class AdminUserTest extends WebTestCase
     private function clearDatabase(): void
     {
         $connection = $this->testConnection();
+        $connection->executeStatement('DELETE FROM stock_receipt_documents');
+        $connection->executeStatement('DELETE FROM stock_receipts');
+        $connection->executeStatement('DELETE FROM stock_issues');
         $connection->executeStatement('DELETE FROM warehouse_users');
         $connection->executeStatement('DELETE FROM warehouses');
         $connection->executeStatement('DELETE FROM articles');
