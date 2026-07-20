@@ -16,6 +16,9 @@ final class LoginTest extends WebTestCase
     protected function setUp(): void
     {
         $this->client = self::createClient();
+        $this->testConnection()->executeStatement('DELETE FROM stock_receipt_documents');
+        $this->testConnection()->executeStatement('DELETE FROM stock_receipts');
+        $this->testConnection()->executeStatement('DELETE FROM stock_issues');
         $this->testConnection()->executeStatement('DELETE FROM identity_users');
 
         self::getContainer()
@@ -25,6 +28,9 @@ final class LoginTest extends WebTestCase
 
     protected function tearDown(): void
     {
+        $this->testConnection()->executeStatement('DELETE FROM stock_receipt_documents');
+        $this->testConnection()->executeStatement('DELETE FROM stock_receipts');
+        $this->testConnection()->executeStatement('DELETE FROM stock_issues');
         $this->testConnection()->executeStatement('DELETE FROM identity_users');
 
         parent::tearDown();

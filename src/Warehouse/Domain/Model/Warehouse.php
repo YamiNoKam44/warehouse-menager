@@ -77,6 +77,17 @@ final class Warehouse
         return $count;
     }
 
+    public function isAssignedTo(User $user): bool
+    {
+        foreach ($this->users as $assignedUser) {
+            if (self::isSameUser($assignedUser, $user)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * @param iterable<User> $users
      */

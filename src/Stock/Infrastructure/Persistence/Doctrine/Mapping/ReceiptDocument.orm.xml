@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping
+    xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd"
+>
+    <entity name="App\Stock\Domain\Model\ReceiptDocument" table="stock_receipt_documents">
+        <id name="id" type="integer" column="id">
+            <generator strategy="IDENTITY"/>
+        </id>
+
+        <field name="storedName" type="string" column="stored_name" length="64" unique="true"/>
+        <field name="originalName" type="string" column="original_name" length="255"/>
+        <field
+            name="type"
+            type="string"
+            enum-type="App\Stock\Domain\Model\ReceiptDocumentType"
+            column="type"
+            length="8"
+        />
+
+        <many-to-one
+            field="receipt"
+            target-entity="App\Stock\Domain\Model\StockReceipt"
+            inversed-by="documents"
+        >
+            <join-column
+                name="receipt_id"
+                referenced-column-name="id"
+                nullable="false"
+                on-delete="CASCADE"
+            />
+        </many-to-one>
+    </entity>
+</doctrine-mapping>

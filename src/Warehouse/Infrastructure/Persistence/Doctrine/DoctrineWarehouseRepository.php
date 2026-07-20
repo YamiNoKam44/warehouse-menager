@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Warehouse\Infrastructure\Persistence\Doctrine;
 
+use App\Warehouse\Domain\Exception\WarehouseInUse;
 use App\Warehouse\Domain\Model\Warehouse;
 use App\Warehouse\Domain\Repository\WarehouseRepository;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
 
 final readonly class DoctrineWarehouseRepository implements WarehouseRepository
 {
@@ -51,10 +51,6 @@ final readonly class DoctrineWarehouseRepository implements WarehouseRepository
         }
     }
 
-    /**
-     * @throws OptimisticLockException
-     * @throws ORMException
-     */
     public function find(int $id): ?Warehouse
     {
         $warehouse = $this->entityManager->find(Warehouse::class, $id);
@@ -70,7 +66,11 @@ final readonly class DoctrineWarehouseRepository implements WarehouseRepository
 
     public function remove(Warehouse $warehouse): void
     {
-        $this->entityManager->remove($warehouse);
-        $this->entityManager->flush();
+        try {
+            $this->entityManager->remove($warehouse);
+            $this->entityManager->flush();
+        } catch (ForeignKeyConstraintViolationException $exception) {
+            throw WarehouseInUse::create($exception);
+        }
     }
 }

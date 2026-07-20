@@ -18,3 +18,7 @@ article:
 warehouse:
     resource: '../src/Warehouse/Infrastructure/Http/'
     type: attribute
+
+stock:
+    resource: '../src/Stock/Infrastructure/Http/'
+    type: attribute

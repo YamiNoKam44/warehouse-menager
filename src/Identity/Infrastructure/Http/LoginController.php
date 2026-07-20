@@ -11,9 +11,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Twig\Environment;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
 
 final readonly class LoginController
 {
@@ -25,11 +22,6 @@ final readonly class LoginController
     ) {
     }
 
-    /**
-     * @throws SyntaxError
-     * @throws RuntimeError
-     * @throws LoaderError
-     */
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function __invoke(): Response
     {

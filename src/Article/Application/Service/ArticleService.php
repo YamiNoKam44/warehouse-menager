@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Article\Application;
+namespace App\Article\Application\Service;
 
 use App\Article\Application\Dto\ArticleData;
 use App\Article\Application\Exception\ArticleNotFound;

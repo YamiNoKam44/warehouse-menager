@@ -22,9 +22,10 @@
     <h2 id="user-form-heading" class="visually-hidden">{{ heading }}</h2>
 
     {{ form_start(form, {attr: {class: 'user-form'}}) }}
-        {% if not form.vars.valid %}
+        {% set root_errors = form_errors(form) %}
+        {% if root_errors|striptags|trim is not empty %}
             <div class="alert" role="alert">
-                {{ form_errors(form) }}
+                {{ root_errors|raw }}
             </div>
         {% endif %}
 

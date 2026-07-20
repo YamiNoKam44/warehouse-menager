@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Warehouse;
 
+use App\Article\Domain\Model\Article;
+use App\Article\Domain\Repository\ArticleRepository;
 use App\Identity\Application\Port\PasswordHasher;
 use App\Identity\Domain\Model\User;
 use App\Identity\Domain\Model\UserRole;
 use App\Identity\Domain\Repository\UserRepository;
+use App\Stock\Domain\Model\StockIssue;
+use App\Stock\Domain\Repository\StockIssueRepository;
+use App\Warehouse\Domain\Model\Warehouse;
+use App\Warehouse\Domain\Repository\WarehouseRepository;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -139,6 +145,47 @@ final class AdminWarehouseTest extends WebTestCase
         self::assertSame(0, (int) $this->testConnection()->fetchOne('SELECT COUNT(*) FROM warehouse_users'));
     }
 
+    public function testAdministratorCannotDeleteWarehouseUsedInStockOperation(): void
+    {
+        $this->logIn('admin');
+
+        $users = self::getContainer()->get(UserRepository::class);
+        $admin = $users->findByLogin('admin');
+        self::assertInstanceOf(User::class, $admin);
+
+        $articles = self::getContainer()->get(ArticleRepository::class);
+        $article = Article::create('Cement', 'kg');
+        $articles->save($article);
+
+        $warehouses = self::getContainer()->get(WarehouseRepository::class);
+        $warehouse = Warehouse::create('Magazyn', new \EmptyIterator());
+        $warehouses->save($warehouse);
+
+        $issues = self::getContainer()->get(StockIssueRepository::class);
+        $issues->save(StockIssue::create(
+            $warehouse,
+            $article,
+            $admin,
+            '1',
+            new \DateTimeImmutable(),
+        ));
+
+        $crawler = $this->client->request('GET', '/admin/warehouses');
+        $deleteForm = $crawler
+            ->filter(sprintf('form[action="/admin/warehouses/%d/delete"]', $warehouse->id()))
+            ->form();
+        $this->client->submit($deleteForm);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_SEE_OTHER);
+        self::assertResponseRedirects('/admin/warehouses');
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('.alert', 'operacji magazynowej.');
+        self::assertSame(
+            1,
+            (int) $this->testConnection()->fetchOne('SELECT COUNT(*) FROM warehouses'),
+        );
+    }
+
     private function logIn(string $login): void
     {
         $crawler = $this->client->request('GET', '/login');
@@ -165,6 +212,9 @@ final class AdminWarehouseTest extends WebTestCase
     private function clearDatabase(): void
     {
         $connection = $this->testConnection();
+        $connection->executeStatement('DELETE FROM stock_receipt_documents');
+        $connection->executeStatement('DELETE FROM stock_receipts');
+        $connection->executeStatement('DELETE FROM stock_issues');
         $connection->executeStatement('DELETE FROM warehouse_users');
         $connection->executeStatement('DELETE FROM warehouses');
         $connection->executeStatement('DELETE FROM articles');
